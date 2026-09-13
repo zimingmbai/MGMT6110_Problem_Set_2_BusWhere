@@ -139,8 +139,54 @@ Alt-Svc: h3=":443"; ma=93600
 Strict-Transport-Security: max-age=31536000 ; includeSubDomains
 Akamai-GRN: 0.6d174b17.1789267647.12835514
 ```
-**What came back:** ...
+**What came back:** 
+- Created api/build-data.js: Reusable serverless function matching api/arrivals.js, paging LTA endpoints to download Routes and Stops data
 
-**What I changed next and why:** ...
+**What I changed next and why:**
+- The function works but it triggers concurrent requests to LTA, resulting in a timeout
+- Hence, a follow up prompt is used to fetch the data one after another instead, never in parallel
+
+---
+
+## Prompt 5 - Fixing Timeout Issue on build-data.js
+```
+ROLE: You are a senior full-stack developer working in my existing project. Strictly work on what is mentioned, do not touch other files.
+
+api/build-data.js is returning HTTP 500 from LTA. Fix three things and add one diagnostic.
+Fetch pages strictly one after another, never in parallel — DataMall returns 500 under concurrent load. Add a short pause, around 200ms, between requests. If this makes the function exceed Vercel's timeout, use the ?part= parameter to split the work rather than reintroducing concurrency.
+
+Check the endpoint paths. Bus Stops and Bus Routes are at /ltaodataservice/BusStops and /ltaodataservice/BusRoutes with no version prefix. Only the arrival endpoint is versioned — do not carry /v3/ across from api/arrivals.js.
+Build the $skip parameter by string concatenation so the dollar sign is not percent-encoded.
+When the upstream fails, include the full response body and the exact URL that was called, with the credential removed, in the JSON you return to me. Right now I get a status code and nothing else, so I cannot see what LTA objected to.
+
+GUARDRAILS: Never print the credential. Never call LTA from browser code. No new npm packages. Do not touch api/arrivals.js or api/health.js. Do not invent any stop, service, or timing that LTA did not return — if a service comes back with fewer stops than expected, write what LTA gave and note it. Leave every screen working exactly as it is.
+
+CONTEXT: Deployed on Vercel from GitHub. I am not a programmer and have no terminal — everything happens in a browser. When you make a choice I did not specify, say so in one line. A real response from the Bus Stops endpoint, called by hand just now, looks like this:
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=UTF-8
+Content-Language: en-US
+X-Frame-Options: deny
+X-XSS-Protection: 1; mode=block
+X-Content-Type-Options: nosniff
+Content-Security-Policy: default-src 'none'; script-src 'self'; connect-src 'self';img-src 'self'; style-src 'self'
+Content-Length: 11846
+Expires: Sun, 13 Sep 2026 02:47:27 GMT
+Cache-Control: max-age=0, no-cache, no-store
+Pragma: no-cache
+Date: Sun, 13 Sep 2026 02:47:27 GMT
+Connection: keep-alive
+Alt-Svc: h3=":443"; ma=93600
+Strict-Transport-Security: max-age=31536000 ; includeSubDomains
+Akamai-GRN: 0.6d174b17.1789267647.12835514
+```
+**What came back:**
+- Strictly Sequential Paging with 200ms Pause
+- Diagnostic Error Response
+
+**What I changed next and why:**
+- Manual Steps
+  - Download stops.json and routes.json
+  - Replace the Files in main/public
+  - Delete build-data.js (Because anyone who guesses the URL can send calls to LTA and utilises my quota)
 
 ---
