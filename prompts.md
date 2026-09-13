@@ -188,5 +188,36 @@ Akamai-GRN: 0.6d174b17.1789267647.12835514
   - Download stops.json and routes.json
   - Replace the Files in main/public
   - Delete build-data.js (Because anyone who guesses the URL can send calls to LTA and utilises my quota)
+- Improve Usability Slightly
+  - Currently it shows whole list of bus stops, and some names are truncated
+
+---
+
+## Prompt 6 - Improve Usability
+```
+ROLE: You are a senior front-end developer working in my existing project. Do not rewrite what is already there; change one screen and add one small data file.
+
+GOAL: My FIND MY STOP screen puts the stop name and the service chips on the same line, so stops with many services push the name until it truncates. And with real LTA data it now lists thousands of stops, which is unusable before the user types anything. Fix both.
+
+Rebuild each stop row as three stacked lines instead of one: the stop code and full name on the first, the road name on the second, the service chips on the third. The name is never truncated. The chips wrap onto as many lines as they need. Keep the existing chip styling and keep them tappable exactly as they are now.
+Add src/data/areas.ts mapping each two-digit bus stop code prefix to a human-readable area label. Generate it by reading public/stops.json in this repo: group every stop by the first two characters of its code, look at the road names and stop names in each group, and write a label from what is actually there. Do not use any knowledge of Singapore geography outside this file. Where a prefix covers more than one recognisable area, use both names separated by a slash. List for me afterwards any prefix you were unsure about, so I can correct it.
+When the search field is empty, show the area list instead of the stop list: each area as a tappable row with its label and how many stops it holds. Tapping one shows the stops in that area with a way back. Typing anything searches across all stops as it does today, ignoring the area selection.
+
+OUTPUT: Change src/components/FindMyStop.tsx and add src/data/areas.ts. Nothing else.
+Sort areas by label. Sort stops within an area by code.
+Keep the four fetch states already handling stops.json exactly as they are.
+Readable on a phone at arm's length — this is the main thing it has to survive.
+Tell me in one line anything you decided that I did not specify.
+
+GUARDRAILS: Do not touch api/arrivals.js, api/health.js, RidePanel.tsx, or busData.ts. Do not change how stops.json or the route files are fetched. Do not invent any stop, area, road or service that is not in stops.json. No new npm packages. No map. Keep the LTA attribution in the footer.
+
+CONTEXT: Real LTA DataMall data, deployed on Vercel from GitHub. I am not a programmer — when you make a choice I did not specify, say so in one line rather than burying it.
+```
+**What came back:**
+- Categorise Bus Stops into Singapore Areas
+- Each Bus Stop has 3 rows - Bus Stop ID/Name, Street Name, Services
+
+**What I changed next and why:**
+- Keep as it is for now. Workable prototype, with room for improvement in user experience.
 
 ---
