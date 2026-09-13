@@ -5,7 +5,6 @@ import path from 'path';
 import {defineConfig} from 'vite';
 import arrivalsHandler from './api/arrivals.js';
 import healthHandler from './api/health.js';
-import buildDataHandler from './api/build-data.js';
 
 export default defineConfig(() => {
   return {
@@ -37,19 +36,6 @@ export default defineConfig(() => {
                 await healthHandler(req, res);
               } catch (err) {
                 console.error('Error in /api/health middleware:', err);
-                if (!res.headersSent) {
-                  res.statusCode = 500;
-                  res.end(JSON.stringify({ error: 'Internal Server Error' }));
-                }
-              }
-              return;
-            }
-
-            if (pathname === '/api/build-data') {
-              try {
-                await buildDataHandler(req, res);
-              } catch (err) {
-                console.error('Error in /api/build-data middleware:', err);
                 if (!res.headersSent) {
                   res.statusCode = 500;
                   res.end(JSON.stringify({ error: 'Internal Server Error' }));
