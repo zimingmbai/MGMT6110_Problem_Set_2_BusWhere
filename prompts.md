@@ -220,6 +220,24 @@ CONTEXT: Real LTA DataMall data, deployed on Vercel from GitHub. I am not a prog
 - Each Bus Stop has 3 rows - Bus Stop ID/Name, Street Name, Services
 
 **What I changed next and why:**
+- Added a Prompt for Data Source Attribution
+
+---
+
+## Prompt 7 - Attribute Data Source
+```
+Under the header BusWhere, add the following subtext to attribute the data source
+
+Contains information from LTA DataMall datasets from the Land Transport Authority of Singapore (LTA), which is made available under the terms of the Singapore Open Data Licence version 1.0.
+
+Links
+- "LTA DataMall" - https://datamall.lta.gov.sg/content/datamall/en.html
+- "Singapore Open Data Licence version 1.0" - https://datamall.lta.gov.sg/content/datamall/en/SingaporeOpenDataLicence.html
+```
+**What came back:**
+- Subtext added below BusWhere title
+
+**What I changed next and why:**
 - Keep as it is for now. Workable prototype, with room for improvement in user experience.
 
 ---
