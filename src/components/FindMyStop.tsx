@@ -161,6 +161,14 @@ export const FindMyStop: React.FC<FindMyStopProps> = ({
           )}
         </div>
       </div>
+
+      {/* Attribution Footer */}
+      <footer
+        id="licence-footer"
+        className="shrink-0 border-t border-zinc-200 px-4 sm:px-8 py-3 bg-zinc-50 text-[11px] sm:text-xs text-zinc-500 text-center leading-normal"
+      >
+        Contains information from Bus Arrival API accessed via LTA DataMall which is made available under the terms of the Singapore Open Data Licence version 1.0
+      </footer>
     </div>
   );
 };

@@ -411,7 +411,9 @@ export function computeRideMetrics(
   serviceNumber: string,
   boardingStopCode: string,
   destinationStopCode: string,
-  currentTimestamp: number = Date.now()
+  currentTimestamp: number = Date.now(),
+  liveBoardingMinutes?: number | null,
+  liveDestinationMinutes?: number | null
 ): { calculation: RideCalculation; direction: ServiceDirection } | null {
   const service = BUS_SERVICES.find((s) => s.serviceNumber === serviceNumber);
   if (!service) return null;
@@ -441,16 +443,34 @@ export function computeRideMetrics(
   const destStop = matchedDirection.stops[dIndex];
 
   const distanceKm = Math.round((destStop.distanceKm - boardStop.distanceKm) * 10) / 10;
+
+  // Check if live arrival times are provided and valid for both boarding and destination
   const hasLiveTimes =
-    boardStop.arrivalMinutes.length > 0 && destStop.arrivalMinutes.length > 0;
+    (liveBoardingMinutes !== undefined &&
+      liveBoardingMinutes !== null &&
+      liveDestinationMinutes !== undefined &&
+      liveDestinationMinutes !== null &&
+      liveDestinationMinutes >= liveBoardingMinutes) ||
+    (liveBoardingMinutes === undefined &&
+      boardStop.arrivalMinutes.length > 0 &&
+      destStop.arrivalMinutes.length > 0);
 
   if (hasLiveTimes) {
-    const minutesToBoarding = boardStop.arrivalMinutes[0];
+    const minutesToBoarding =
+      liveBoardingMinutes !== undefined && liveBoardingMinutes !== null
+        ? liveBoardingMinutes
+        : boardStop.arrivalMinutes[0];
+
+    const destMinutes =
+      liveDestinationMinutes !== undefined && liveDestinationMinutes !== null
+        ? liveDestinationMinutes
+        : destStop.arrivalMinutes[0];
+
     // Subtract one stop's arrival time from another's
-    const rideDurationMinutes = Math.max(1, destStop.arrivalMinutes[0] - boardStop.arrivalMinutes[0]);
+    const rideDurationMinutes = Math.max(1, destMinutes - minutesToBoarding);
 
     // Destination arrival clock time = currentTime + dest arrival
-    const arrivalDate = new Date(currentTimestamp + destStop.arrivalMinutes[0] * 60 * 1000);
+    const arrivalDate = new Date(currentTimestamp + destMinutes * 60 * 1000);
     const arrivalClockTime = formatClockTime(arrivalDate);
 
     return {
@@ -471,9 +491,11 @@ export function computeRideMetrics(
     const estimatedHours = distanceKm / AVERAGE_BUS_SPEED_KMH;
     const rideDurationMinutes = Math.max(1, Math.round(estimatedHours * 60));
 
-    // Wait until boarding: if boarding has live times use it, else assumed headway
+    // Wait until boarding: if live boarding time is known use it, else fallback to schedule
     const minutesToBoarding =
-      boardStop.arrivalMinutes.length > 0
+      liveBoardingMinutes !== undefined && liveBoardingMinutes !== null
+        ? liveBoardingMinutes
+        : boardStop.arrivalMinutes.length > 0
         ? boardStop.arrivalMinutes[0]
         : ASSUMED_SCHEDULED_HEADWAY_MIN;
 

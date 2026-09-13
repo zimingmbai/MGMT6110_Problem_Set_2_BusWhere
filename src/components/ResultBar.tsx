@@ -6,12 +6,14 @@ interface ResultBarProps {
   calculation: RideCalculation | null;
   destinationName?: string;
   hasDestination: boolean;
+  statusSentence?: string;
 }
 
 export const ResultBar: React.FC<ResultBarProps> = ({
   calculation,
   destinationName,
   hasDestination,
+  statusSentence,
 }) => {
   const [showInfo, setShowInfo] = useState(false);
 
@@ -71,6 +73,8 @@ export const ResultBar: React.FC<ResultBarProps> = ({
 
   const infoMessage = hasLiveTiming
     ? 'Comes from current bus arrival times. Traffic conditions may vary.'
+    : statusSentence
+    ? `${statusSentence} Duration is calculated using the assumed average bus speed (18 km/h).`
     : 'No live times available for this service right now; duration is estimated from distance.';
 
   return (

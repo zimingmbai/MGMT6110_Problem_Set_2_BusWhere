@@ -1,7 +1,12 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { X, ArrowLeft, Bus, CheckCircle2 } from 'lucide-react';
 import { STOP_MAP, computeRideMetrics, getServiceDirectionForBoarding } from '../data/busData';
 import { ResultBar } from './ResultBar';
+import {
+  getStopArrivals,
+  getMinutesForService,
+  StopArrivalData,
+} from '../services/busArrivals';
 
 interface RidePanelProps {
   serviceNumber: string;
@@ -21,13 +26,19 @@ export const RidePanel: React.FC<RidePanelProps> = ({
   const boardingRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  // Live arrival state for boarding stop and destination stop
+  const [boardingData, setBoardingData] = useState<StopArrivalData | null>(null);
+  const [boardingLoading, setBoardingLoading] = useState(true);
+
+  const [destinationData, setDestinationData] = useState<StopArrivalData | null>(null);
+  const [destinationLoading, setDestinationLoading] = useState(false);
+
   const direction = getServiceDirectionForBoarding(serviceNumber, boardingStopCode);
   const boardingStopDetails = STOP_MAP.get(boardingStopCode);
 
   // Auto-scroll to the boarding stop when panel opens or service changes
   useEffect(() => {
     if (boardingRef.current && scrollContainerRef.current) {
-      // Small timeout ensures layout is painted before scroll
       const timer = setTimeout(() => {
         boardingRef.current?.scrollIntoView({
           behavior: 'smooth',
@@ -38,6 +49,72 @@ export const RidePanel: React.FC<RidePanelProps> = ({
     }
   }, [serviceNumber, boardingStopCode]);
 
+  // Call 1: Fetch live arrivals for boarding stop
+  useEffect(() => {
+    let isMounted = true;
+    setBoardingLoading(true);
+
+    getStopArrivals(boardingStopCode)
+      .then((data) => {
+        if (isMounted) {
+          setBoardingData(data);
+          setBoardingLoading(false);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setBoardingData({
+            stopCode: boardingStopCode,
+            status: 'unreachable',
+            sentence: 'The arrival service is currently unreachable; showing distance-based estimate.',
+            services: [],
+            timestamp: Date.now(),
+          });
+          setBoardingLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [boardingStopCode, serviceNumber]);
+
+  // Call 2: Fetch live arrivals for destination stop when selected
+  useEffect(() => {
+    if (!destinationStopCode) {
+      setDestinationData(null);
+      setDestinationLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+    setDestinationLoading(true);
+
+    getStopArrivals(destinationStopCode)
+      .then((data) => {
+        if (isMounted) {
+          setDestinationData(data);
+          setDestinationLoading(false);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setDestinationData({
+            stopCode: destinationStopCode,
+            status: 'unreachable',
+            sentence: 'The arrival service is currently unreachable; showing distance-based estimate.',
+            services: [],
+            timestamp: Date.now(),
+          });
+          setDestinationLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [destinationStopCode, serviceNumber]);
+
   if (!direction) {
     return null;
   }
@@ -47,13 +124,50 @@ export const RidePanel: React.FC<RidePanelProps> = ({
     ? direction.stops.findIndex((s) => s.stopCode === destinationStopCode)
     : -1;
 
+  // Compute live service arrival details
+  const boardingInfo = getMinutesForService(
+    boardingLoading ? null : boardingData,
+    serviceNumber
+  );
+
+  const destinationInfo = destinationStopCode
+    ? getMinutesForService(destinationLoading ? null : destinationData, serviceNumber)
+    : null;
+
+  // Determine active status sentence for non-live or fallback scenarios
+  let statusSentence: string | undefined;
+  if (boardingInfo.status !== 'success') {
+    statusSentence = boardingInfo.sentence;
+  } else if (destinationInfo && destinationInfo.status !== 'success') {
+    statusSentence = destinationInfo.sentence;
+  }
+
+  // Live minutes if available
+  const liveBoardingMinutes =
+    boardingInfo.status === 'success' && boardingInfo.arrivalMinutes.length > 0
+      ? boardingInfo.arrivalMinutes[0]
+      : null;
+
+  const liveDestMinutes =
+    destinationInfo &&
+    destinationInfo.status === 'success' &&
+    destinationInfo.arrivalMinutes.length > 0
+      ? destinationInfo.arrivalMinutes[0]
+      : null;
+
   // Compute metrics if destination selected
   const calculationResult = destinationStopCode
-    ? computeRideMetrics(serviceNumber, boardingStopCode, destinationStopCode)
+    ? computeRideMetrics(
+        serviceNumber,
+        boardingStopCode,
+        destinationStopCode,
+        Date.now(),
+        liveBoardingMinutes,
+        liveDestMinutes
+      )
     : null;
 
   const destinationDetails = destinationStopCode ? STOP_MAP.get(destinationStopCode) : null;
-  const boardingRouteStop = boardingIndex !== -1 ? direction.stops[boardingIndex] : null;
 
   return (
     <aside
@@ -99,23 +213,32 @@ export const RidePanel: React.FC<RidePanelProps> = ({
         </button>
       </div>
 
-      {/* Boarding Notice Bar */}
-      <div className="px-5 py-3 bg-zinc-50 border-b border-zinc-200 flex items-center justify-between shrink-0">
-        <div className="text-xs text-zinc-600">
-          Boarding at{' '}
-          <span className="font-semibold text-zinc-900">
-            {boardingStopDetails?.name || boardingStopCode}
-          </span>
-          <span className="text-zinc-400 ml-1">({boardingStopCode})</span>
+      {/* Boarding Notice Bar with 4 explicit sentences */}
+      <div className="px-5 py-3 bg-zinc-50 border-b border-zinc-200 shrink-0">
+        <div className="flex items-center justify-between">
+          <div className="text-xs text-zinc-600">
+            Boarding at{' '}
+            <span className="font-semibold text-zinc-900">
+              {boardingStopDetails?.name || boardingStopCode}
+            </span>
+            <span className="text-zinc-400 ml-1">({boardingStopCode})</span>
+          </div>
+
+          {boardingInfo.status === 'success' ? (
+            <div className="text-xs font-bold text-red-600">
+              Next: {boardingInfo.arrivalMinutes.map((m) => `${m} min`).join(', ')}
+            </div>
+          ) : null}
         </div>
-        {boardingRouteStop && boardingRouteStop.arrivalMinutes.length > 0 ? (
-          <div className="text-xs font-bold text-red-600">
-            Next: {boardingRouteStop.arrivalMinutes.map((m) => `${m} min`).join(', ')}
-          </div>
-        ) : (
-          <div className="text-xs font-medium text-zinc-400">
-            No live times
-          </div>
+
+        {/* Four distinct non-spinner sentences */}
+        {boardingInfo.status !== 'success' && (
+          <p
+            id="boarding-status-sentence"
+            className="mt-1 text-xs text-zinc-600 leading-snug"
+          >
+            {boardingInfo.sentence}
+          </p>
         )}
       </div>
 
@@ -137,7 +260,6 @@ export const RidePanel: React.FC<RidePanelProps> = ({
               index >= boardingIndex &&
               index <= destinationIndex;
 
-            // Connector line styling
             const isLast = index === direction.stops.length - 1;
             const connectorIsJoined =
               destinationIndex > boardingIndex &&
@@ -155,7 +277,6 @@ export const RidePanel: React.FC<RidePanelProps> = ({
               >
                 {/* Vertical Transit Track */}
                 <div className="relative flex flex-col items-center mr-4 shrink-0 w-6">
-                  {/* Top half connector (if needed for continuous continuity) */}
                   {!isLast && (
                     <div
                       className={`absolute top-3 bottom-0 w-0.5 ${
@@ -179,12 +300,8 @@ export const RidePanel: React.FC<RidePanelProps> = ({
                         : 'w-2.5 h-2.5 bg-zinc-300 mt-2'
                     }`}
                   >
-                    {isBoarding && (
-                      <Bus className="w-3 h-3 text-red-600" />
-                    )}
-                    {isDestination && (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-white" />
-                    )}
+                    {isBoarding && <Bus className="w-3 h-3 text-red-600" />}
+                    {isDestination && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
                   </div>
                 </div>
 
@@ -236,17 +353,30 @@ export const RidePanel: React.FC<RidePanelProps> = ({
                     {/* Live arrival or distance tag */}
                     <div className="text-right shrink-0 text-xs">
                       {isBoarding ? (
-                        routeStop.arrivalMinutes.length > 0 ? (
+                        boardingInfo.status === 'loading' ? (
+                          <span className="text-zinc-400 font-mono">...</span>
+                        ) : boardingInfo.status === 'success' &&
+                          boardingInfo.arrivalMinutes.length > 0 ? (
                           <span className="font-bold text-red-600">
-                            {routeStop.arrivalMinutes[0]} min
+                            {boardingInfo.arrivalMinutes[0]} min
                           </span>
                         ) : (
-                          <span className="text-zinc-400">No times</span>
+                          <span className="text-zinc-400">~7 min</span>
                         )
-                      ) : routeStop.arrivalMinutes.length > 0 ? (
-                        <span className="text-zinc-500 font-mono">
-                          {routeStop.arrivalMinutes[0]} min
-                        </span>
+                      ) : isDestination ? (
+                        destinationLoading ? (
+                          <span className="text-zinc-400 font-mono">...</span>
+                        ) : destinationInfo &&
+                          destinationInfo.status === 'success' &&
+                          destinationInfo.arrivalMinutes.length > 0 ? (
+                          <span className="font-bold text-zinc-900 font-mono">
+                            {destinationInfo.arrivalMinutes[0]} min
+                          </span>
+                        ) : (
+                          <span className="text-zinc-400 font-mono">
+                            {routeStop.distanceKm} km
+                          </span>
+                        )
                       ) : (
                         <span className="text-zinc-400 font-mono">
                           {routeStop.distanceKm} km
@@ -255,9 +385,7 @@ export const RidePanel: React.FC<RidePanelProps> = ({
                     </div>
                   </div>
 
-                  <p className="text-xs text-zinc-500 mt-0.5">
-                    {stopInfo?.road}
-                  </p>
+                  <p className="text-xs text-zinc-500 mt-0.5">{stopInfo?.road}</p>
 
                   {/* Tap prompt helper for eligible stops */}
                   {isAfterBoarding && !isDestination && !destinationStopCode && (
@@ -278,6 +406,7 @@ export const RidePanel: React.FC<RidePanelProps> = ({
           calculation={calculationResult ? calculationResult.calculation : null}
           destinationName={destinationDetails?.name}
           hasDestination={Boolean(destinationStopCode)}
+          statusSentence={statusSentence}
         />
       </div>
     </aside>
