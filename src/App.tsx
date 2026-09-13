@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { BUS_STOPS } from './data/busData';
+import React, { useState, useCallback } from 'react';
 import { FindMyStop } from './components/FindMyStop';
 import { RidePanel } from './components/RidePanel';
+import { BusStop } from './types';
 
 export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -9,6 +9,15 @@ export default function App() {
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const [destinationStopCode, setDestinationStopCode] = useState<string | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
+  const [stopsMap, setStopsMap] = useState<Map<string, BusStop>>(new Map());
+
+  const handleStopsLoaded = useCallback((loadedStops: BusStop[]) => {
+    const map = new Map<string, BusStop>();
+    for (const stop of loadedStops) {
+      map.set(stop.code, stop);
+    }
+    setStopsMap(map);
+  }, []);
 
   const handleSelectService = (stopCode: string, serviceNumber: string) => {
     setBoardingStopCode(stopCode);
@@ -39,12 +48,12 @@ export default function App() {
           }`}
         >
           <FindMyStop
-            stops={BUS_STOPS}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
             onSelectService={handleSelectService}
             activeBoardingCode={panelOpen ? boardingStopCode : null}
             activeServiceNumber={panelOpen ? selectedService : null}
+            onStopsLoaded={handleStopsLoaded}
           />
         </div>
 
@@ -66,6 +75,7 @@ export default function App() {
             destinationStopCode={destinationStopCode}
             onSelectDestination={handleSelectDestination}
             onClose={handleClosePanel}
+            stopsMap={stopsMap}
           />
         )}
       </main>

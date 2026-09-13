@@ -2,25 +2,27 @@ export interface BusStop {
   code: string;
   name: string;
   road: string;
+  latitude?: number;
+  longitude?: number;
   services: string[];
 }
 
 export interface RouteStop {
   stopCode: string;
   distanceKm: number;
-  arrivalMinutes: number[]; // Empty array [] for services with no live timing
+  arrivalMinutes?: number[]; // Empty array [] or optional for services with no live timing
 }
 
 export interface ServiceDirection {
   directionId: 1 | 2;
-  originName: string;
-  destinationName: string;
+  originName?: string;
+  destinationName?: string;
   stops: RouteStop[];
 }
 
 export interface BusService {
   serviceNumber: string;
-  directions: [ServiceDirection, ServiceDirection];
+  directions: ServiceDirection[];
 }
 
 export interface RideCalculation {

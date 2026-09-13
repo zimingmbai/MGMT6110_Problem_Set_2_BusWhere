@@ -1,0 +1,528 @@
+[
+  {
+    "code": "54261",
+    "name": "Ang Mo Kio Stn",
+    "road": "Ang Mo Kio Ave 8",
+    "latitude": 1.3699,
+    "longitude": 103.8496,
+    "services": [
+      "74",
+      "166",
+      "851"
+    ]
+  },
+  {
+    "code": "54269",
+    "name": "Opp Ang Mo Kio Stn",
+    "road": "Ang Mo Kio Ave 8",
+    "latitude": 1.3697,
+    "longitude": 103.8492,
+    "services": [
+      "74",
+      "166",
+      "851"
+    ]
+  },
+  {
+    "code": "54199",
+    "name": "Blk 424",
+    "road": "Ang Mo Kio Ave 3",
+    "latitude": 1.3685,
+    "longitude": 103.8542,
+    "services": [
+      "74",
+      "166"
+    ]
+  },
+  {
+    "code": "54191",
+    "name": "Opp Blk 424",
+    "road": "Ang Mo Kio Ave 3",
+    "latitude": 1.3688,
+    "longitude": 103.854,
+    "services": [
+      "74",
+      "166"
+    ]
+  },
+  {
+    "code": "53009",
+    "name": "Bishan Int",
+    "road": "Bishan Pl",
+    "latitude": 1.3506,
+    "longitude": 103.8486,
+    "services": [
+      "74",
+      "166",
+      "851"
+    ]
+  },
+  {
+    "code": "53231",
+    "name": "Raffles Institution",
+    "road": "Bishan Rd",
+    "latitude": 1.3478,
+    "longitude": 103.848,
+    "services": [
+      "74",
+      "166",
+      "851"
+    ]
+  },
+  {
+    "code": "53239",
+    "name": "Opp Raffles Institution",
+    "road": "Bishan Rd",
+    "latitude": 1.3482,
+    "longitude": 103.8475,
+    "services": [
+      "74",
+      "166",
+      "851"
+    ]
+  },
+  {
+    "code": "52009",
+    "name": "Toa Payoh Int",
+    "road": "Lor 6 Toa Payoh",
+    "latitude": 1.3328,
+    "longitude": 103.8477,
+    "services": [
+      "65",
+      "74",
+      "174"
+    ]
+  },
+  {
+    "code": "52181",
+    "name": "Opp Toa Payoh Swim Cplx",
+    "road": "Lor 6 Toa Payoh",
+    "latitude": 1.3305,
+    "longitude": 103.853,
+    "services": [
+      "65",
+      "74",
+      "174"
+    ]
+  },
+  {
+    "code": "52189",
+    "name": "Toa Payoh Swim Cplx",
+    "road": "Lor 6 Toa Payoh",
+    "latitude": 1.3302,
+    "longitude": 103.8535,
+    "services": [
+      "65",
+      "74",
+      "174"
+    ]
+  },
+  {
+    "code": "50031",
+    "name": "Novena Stn",
+    "road": "Thomson Rd",
+    "latitude": 1.3204,
+    "longitude": 103.8438,
+    "services": [
+      "65",
+      "166",
+      "174",
+      "851"
+    ]
+  },
+  {
+    "code": "50038",
+    "name": "Opp Novena Stn",
+    "road": "Thomson Rd",
+    "latitude": 1.32,
+    "longitude": 103.8442,
+    "services": [
+      "65",
+      "166",
+      "174",
+      "851"
+    ]
+  },
+  {
+    "code": "09219",
+    "name": "Newton Stn Exit A",
+    "road": "Scotts Rd",
+    "latitude": 1.3123,
+    "longitude": 103.8379,
+    "services": [
+      "74",
+      "166",
+      "851"
+    ]
+  },
+  {
+    "code": "09211",
+    "name": "Newton Stn Exit B",
+    "road": "Scotts Rd",
+    "latitude": 1.313,
+    "longitude": 103.8375,
+    "services": [
+      "74",
+      "166",
+      "851"
+    ]
+  },
+  {
+    "code": "09048",
+    "name": "Far East Plaza",
+    "road": "Scotts Rd",
+    "latitude": 1.3073,
+    "longitude": 103.8335,
+    "services": [
+      "74",
+      "166",
+      "174"
+    ]
+  },
+  {
+    "code": "09047",
+    "name": "Royal Plaza On Scotts",
+    "road": "Scotts Rd",
+    "latitude": 1.3068,
+    "longitude": 103.833,
+    "services": [
+      "74",
+      "166",
+      "174"
+    ]
+  },
+  {
+    "code": "09022",
+    "name": "Orchard Stn / Tangs",
+    "road": "Orchard Blvd",
+    "latitude": 1.304,
+    "longitude": 103.8318,
+    "services": [
+      "14",
+      "65",
+      "74",
+      "166",
+      "174"
+    ]
+  },
+  {
+    "code": "09023",
+    "name": "Opp Orchard Stn",
+    "road": "Orchard Turn",
+    "latitude": 1.3045,
+    "longitude": 103.8322,
+    "services": [
+      "14",
+      "65",
+      "74",
+      "166",
+      "174"
+    ]
+  },
+  {
+    "code": "09037",
+    "name": "Somerset Stn",
+    "road": "Orchard Rd",
+    "latitude": 1.3005,
+    "longitude": 103.8385,
+    "services": [
+      "14",
+      "65",
+      "174"
+    ]
+  },
+  {
+    "code": "09038",
+    "name": "Opp Somerset Stn",
+    "road": "Somerset Rd",
+    "latitude": 1.3,
+    "longitude": 103.838,
+    "services": [
+      "14",
+      "65",
+      "174"
+    ]
+  },
+  {
+    "code": "08138",
+    "name": "Dhoby Ghaut Stn",
+    "road": "Orchard Rd",
+    "latitude": 1.2988,
+    "longitude": 103.8458,
+    "services": [
+      "14",
+      "65",
+      "166",
+      "174",
+      "851"
+    ]
+  },
+  {
+    "code": "08137",
+    "name": "Plaza Singapura",
+    "road": "Orchard Rd",
+    "latitude": 1.2995,
+    "longitude": 103.8452,
+    "services": [
+      "14",
+      "65",
+      "166",
+      "174",
+      "851"
+    ]
+  },
+  {
+    "code": "04111",
+    "name": "Cathay Bldg",
+    "road": "Bras Basah Rd",
+    "latitude": 1.2975,
+    "longitude": 103.8488,
+    "services": [
+      "14",
+      "174",
+      "851"
+    ]
+  },
+  {
+    "code": "04121",
+    "name": "SMU / Bras Basah Stn",
+    "road": "Bras Basah Rd",
+    "latitude": 1.2965,
+    "longitude": 103.8505,
+    "services": [
+      "14",
+      "174",
+      "851"
+    ]
+  },
+  {
+    "code": "04129",
+    "name": "Opp SMU",
+    "road": "Stamford Rd",
+    "latitude": 1.296,
+    "longitude": 103.85,
+    "services": [
+      "14",
+      "174",
+      "851"
+    ]
+  },
+  {
+    "code": "01012",
+    "name": "Hotel Rendezvous",
+    "road": "Bras Basah Rd",
+    "latitude": 1.2968,
+    "longitude": 103.8525,
+    "services": [
+      "14",
+      "174",
+      "851"
+    ]
+  },
+  {
+    "code": "04168",
+    "name": "City Hall Stn Exit B",
+    "road": "Nth Bridge Rd",
+    "latitude": 1.293,
+    "longitude": 103.852,
+    "services": [
+      "14",
+      "174"
+    ]
+  },
+  {
+    "code": "04167",
+    "name": "Opp City Hall Stn",
+    "road": "Coleman St",
+    "latitude": 1.2925,
+    "longitude": 103.8515,
+    "services": [
+      "14",
+      "174"
+    ]
+  },
+  {
+    "code": "04222",
+    "name": "Clarke Quay Stn",
+    "road": "Eu Tong Sen St",
+    "latitude": 1.2885,
+    "longitude": 103.8465,
+    "services": [
+      "14",
+      "166",
+      "851"
+    ]
+  },
+  {
+    "code": "04229",
+    "name": "Opp Clarke Quay Stn",
+    "road": "New Bridge Rd",
+    "latitude": 1.288,
+    "longitude": 103.846,
+    "services": [
+      "14",
+      "166",
+      "851"
+    ]
+  },
+  {
+    "code": "05013",
+    "name": "Chinatown Stn Exit C",
+    "road": "Eu Tong Sen St",
+    "latitude": 1.284,
+    "longitude": 103.8435,
+    "services": [
+      "65",
+      "166",
+      "174",
+      "851"
+    ]
+  },
+  {
+    "code": "05019",
+    "name": "Chinatown Stn Exit E",
+    "road": "New Bridge Rd",
+    "latitude": 1.2835,
+    "longitude": 103.844,
+    "services": [
+      "65",
+      "166",
+      "174",
+      "851"
+    ]
+  },
+  {
+    "code": "10018",
+    "name": "Outram Pk Stn",
+    "road": "New Bridge Rd",
+    "latitude": 1.2805,
+    "longitude": 103.8398,
+    "services": [
+      "65",
+      "174",
+      "851"
+    ]
+  },
+  {
+    "code": "10017",
+    "name": "Opp Outram Pk Stn",
+    "road": "New Bridge Rd",
+    "latitude": 1.28,
+    "longitude": 103.8402,
+    "services": [
+      "65",
+      "174",
+      "851"
+    ]
+  },
+  {
+    "code": "10009",
+    "name": "Bukit Merah Int",
+    "road": "Bt Merah Central",
+    "latitude": 1.2825,
+    "longitude": 103.818,
+    "services": [
+      "851"
+    ]
+  },
+  {
+    "code": "14119",
+    "name": "HarbourFront Stn / Vivocity",
+    "road": "Telok Blangah Rd",
+    "latitude": 1.2652,
+    "longitude": 103.822,
+    "services": [
+      "65",
+      "166"
+    ]
+  },
+  {
+    "code": "14111",
+    "name": "Opp HarbourFront Stn",
+    "road": "Telok Blangah Rd",
+    "latitude": 1.2655,
+    "longitude": 103.8215,
+    "services": [
+      "65",
+      "166"
+    ]
+  },
+  {
+    "code": "11379",
+    "name": "Buona Vista Stn",
+    "road": "Commonwealth Ave",
+    "latitude": 1.306,
+    "longitude": 103.7905,
+    "services": [
+      "14",
+      "74",
+      "166"
+    ]
+  },
+  {
+    "code": "11371",
+    "name": "Opp Buona Vista Stn",
+    "road": "Commonwealth Ave",
+    "latitude": 1.3065,
+    "longitude": 103.79,
+    "services": [
+      "14",
+      "74",
+      "166"
+    ]
+  },
+  {
+    "code": "19009",
+    "name": "Clementi Int",
+    "road": "Clementi Ave 3",
+    "latitude": 1.315,
+    "longitude": 103.765,
+    "services": [
+      "14",
+      "74",
+      "166"
+    ]
+  },
+  {
+    "code": "19051",
+    "name": "Blk 328",
+    "road": "Clementi Ave 2",
+    "latitude": 1.316,
+    "longitude": 103.7675,
+    "services": [
+      "14",
+      "74",
+      "166"
+    ]
+  },
+  {
+    "code": "84009",
+    "name": "Tampines Int",
+    "road": "Tampines Ave 4",
+    "latitude": 1.3535,
+    "longitude": 103.945,
+    "services": [
+      "65"
+    ]
+  },
+  {
+    "code": "84011",
+    "name": "Opp Tampines Stn",
+    "road": "Tampines Ave 4",
+    "latitude": 1.354,
+    "longitude": 103.9445,
+    "services": [
+      "65"
+    ]
+  },
+  {
+    "code": "28009",
+    "name": "Jurong East Int",
+    "road": "Jurong Gateway Rd",
+    "latitude": 1.333,
+    "longitude": 103.742,
+    "services": [
+      "174"
+    ]
+  }
+]

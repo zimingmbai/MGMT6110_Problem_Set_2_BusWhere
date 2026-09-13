@@ -1,24 +1,84 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Search, X } from 'lucide-react';
 import { BusStop } from '../types';
 
 interface FindMyStopProps {
-  stops: BusStop[];
   searchQuery: string;
   onSearchChange: (query: string) => void;
   onSelectService: (stopCode: string, serviceNumber: string) => void;
   activeBoardingCode: string | null;
   activeServiceNumber: string | null;
+  onStopsLoaded?: (stops: BusStop[]) => void;
 }
 
 export const FindMyStop: React.FC<FindMyStopProps> = ({
-  stops,
   searchQuery,
   onSearchChange,
   onSelectService,
   activeBoardingCode,
   activeServiceNumber,
+  onStopsLoaded,
 }) => {
+  const [stops, setStops] = useState<BusStop[]>([]);
+  const [fetchStatus, setFetchStatus] = useState<
+    'loading' | 'empty' | 'refused' | 'unreachable' | 'success'
+  >('loading');
+  const [fetchSentence, setFetchSentence] = useState('Fetching bus stops...');
+
+  // Load /stops.json once on mount
+  useEffect(() => {
+    let isMounted = true;
+    setFetchStatus('loading');
+    setFetchSentence('Fetching bus stops...');
+
+    fetch('/stops.json')
+      .then(async (res) => {
+        if (!isMounted) return;
+
+        if (res.status === 401 || res.status === 403) {
+          setFetchStatus('refused');
+          setFetchSentence('The stop data service refused the request; showing distance-based estimate.');
+          return;
+        }
+
+        if (!res.ok) {
+          setFetchStatus('unreachable');
+          setFetchSentence('Bus stop data is currently unreachable.');
+          return;
+        }
+
+        try {
+          const data = await res.json();
+          if (!isMounted) return;
+
+          if (!Array.isArray(data) || data.length === 0) {
+            setFetchStatus('empty');
+            setFetchSentence('No bus stops found in dataset.');
+            return;
+          }
+
+          setStops(data);
+          setFetchStatus('success');
+          onStopsLoaded?.(data);
+        } catch (_) {
+          if (isMounted) {
+            setFetchStatus('unreachable');
+            setFetchSentence('Bus stop data is currently unreachable.');
+          }
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setFetchStatus('unreachable');
+          setFetchSentence('Bus stop data is currently unreachable.');
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [onStopsLoaded]);
+
   const trimmedQuery = searchQuery.trim().toLowerCase();
 
   const filteredStops = useMemo(() => {
@@ -74,8 +134,12 @@ export const FindMyStop: React.FC<FindMyStopProps> = ({
             )}
           </div>
 
-          {/* One-line search hint */}
-          {!trimmedQuery ? (
+          {/* One-line search hint or state message */}
+          {fetchStatus !== 'success' ? (
+            <p id="fetch-status-hint" className="mt-2.5 text-xs sm:text-sm text-zinc-600 font-medium">
+              {fetchSentence}
+            </p>
+          ) : !trimmedQuery ? (
             <p id="search-hint" className="mt-2.5 text-xs sm:text-sm text-zinc-500 font-normal">
               Search by 5-digit bus stop code, road name, or landmark to find your stop.
             </p>
@@ -90,7 +154,11 @@ export const FindMyStop: React.FC<FindMyStopProps> = ({
       {/* Matching Bus Stops List */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-4">
         <div className="max-w-3xl mx-auto divide-y divide-zinc-200">
-          {filteredStops.length === 0 ? (
+          {fetchStatus !== 'success' ? (
+            <div id="stops-state-message" className="py-16 text-center">
+              <p className="text-zinc-800 text-sm font-medium">{fetchSentence}</p>
+            </div>
+          ) : filteredStops.length === 0 ? (
             <div id="no-stops-found" className="py-16 text-center">
               <p className="text-zinc-900 text-base font-semibold">
                 No stops match "{searchQuery}"
@@ -101,40 +169,40 @@ export const FindMyStop: React.FC<FindMyStopProps> = ({
             </div>
           ) : (
             filteredStops.map((stop) => {
-              const isCurrentBoarding = activeBoardingCode === stop.code;
+              const isSelectedStop = stop.code === activeBoardingCode;
 
               return (
                 <div
                   key={stop.code}
-                  id={`stop-row-${stop.code}`}
+                  id={`bus-stop-row-${stop.code}`}
                   className={`py-4 transition-colors ${
-                    isCurrentBoarding ? 'bg-red-50/50 -mx-3 px-3' : ''
+                    isSelectedStop ? 'bg-red-50/70 -mx-3 px-3 rounded' : ''
                   }`}
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                    {/* Stop Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs sm:text-sm font-bold text-zinc-500 bg-zinc-100 px-2 py-0.5 tracking-wider">
+                  <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline gap-2.5 flex-wrap">
+                        <span className="font-mono font-bold text-sm text-zinc-900 tracking-wider">
                           {stop.code}
                         </span>
-                        <h3 className="text-base sm:text-lg font-bold text-zinc-900 truncate">
+                        <h2 className="text-base sm:text-lg font-bold text-zinc-900 truncate">
                           {stop.name}
-                        </h3>
+                        </h2>
                       </div>
-                      <p className="text-xs sm:text-sm text-zinc-500 mt-1">
+                      <p className="text-xs sm:text-sm text-zinc-500 mt-0.5 truncate">
                         {stop.road}
                       </p>
                     </div>
 
-                    {/* Small Tappable Service Chips */}
-                    <div className="flex items-center gap-2 flex-wrap shrink-0 pt-1 sm:pt-0">
-                      <span className="text-[11px] uppercase tracking-wider text-zinc-400 sm:hidden">
-                        Services:
-                      </span>
+                    {/* Service Chips */}
+                    <div
+                      id={`services-${stop.code}`}
+                      aria-label={`Services at ${stop.name}`}
+                      className="flex items-center gap-1.5 flex-wrap pt-1 sm:pt-0 shrink-0"
+                    >
                       {stop.services.map((svcNum) => {
                         const isSelected =
-                          isCurrentBoarding && activeServiceNumber === svcNum;
+                          isSelectedStop && svcNum === activeServiceNumber;
 
                         return (
                           <button
