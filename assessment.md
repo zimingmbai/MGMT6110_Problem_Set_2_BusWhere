@@ -31,6 +31,12 @@
 - Nonetheless, clicking on them still leads to the correct Routes and timings being displayed.
 - A user can verify this by tapping through the screen. And storing the data improves efficiency, instead of sending an API call for every click.
 
+**Cache Data is different from Source Refresh** - Not Met
+- The cache refreshes at 20 seconds interval, which was decided by the agent.
+- However LTA refreshes their data at 1 min intervals
+- This means that the app is fetching updates more than what it requires, which is unncessary
+> - This can be seen in /api/arrivals > Cache-Control > s-maxage
+
 ## Assess the collaboration, not the tool
 
 ### 
