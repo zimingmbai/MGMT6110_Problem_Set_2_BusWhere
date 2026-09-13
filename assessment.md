@@ -1,4 +1,4 @@
-# prompts.md - BusWhere
+# assessment.md - BusWhere
 **Student:** Lim Zi Ming · **Course:** MGMT 6110 · **Problem Set 2**
 
 **User sentence:** SG Bus Commuters opens this screen to find the arrival timings of their bus, and knows it worked when they see the next buses timings.
