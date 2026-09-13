@@ -1,7 +1,7 @@
 # prompts.md - BusWhere
 **Student:** Lim Zi Ming · **Course:** MGMT 6110 · **Problem Set 2**
-**User sentence:** A [user] opens this screen to [job], and knows it worked when [what they see].
-**Live link:** [your Vercel production URL, the short one, tested in a private window]
+**User sentence:** SG Bus Commuters opens this screen to find the arrival timings of their bus, and knows it worked when they see the next buses timings.
+**Live link:** [https://mgmt-6110-problem-set-2-bus-where-5.vercel.app/](https://mgmt-6110-problem-set-2-bus-where-5.vercel.app/)
 
 ---
 
