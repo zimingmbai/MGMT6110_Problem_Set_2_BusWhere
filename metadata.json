@@ -1,0 +1,6 @@
+{
+  "name": "BusWhere",
+  "description": "Minimalist bus commute calculator for Singapore commuters showing arrival times, trip durations, and arrival times between stops.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
