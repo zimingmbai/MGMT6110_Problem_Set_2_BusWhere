@@ -200,11 +200,34 @@ export const FindMyStop: React.FC<FindMyStopProps> = ({
       <div className="sticky top-0 z-20 bg-white border-b border-zinc-200 px-4 sm:px-8 py-5">
         <div className="max-w-3xl mx-auto">
           {/* App title bar */}
-          <div className="flex items-baseline justify-between mb-4">
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-zinc-900">
-              BusWhere
-            </h1>
-            <span className="text-xs font-mono text-zinc-400">Singapore Commute</span>
+          <div className="mb-4">
+            <div className="flex items-baseline justify-between">
+              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-zinc-900">
+                BusWhere
+              </h1>
+              <span className="text-xs font-mono text-zinc-400">Singapore Commute</span>
+            </div>
+            <p className="mt-1 text-[11px] sm:text-xs text-zinc-500 leading-relaxed">
+              Contains information from{' '}
+              <a
+                href="https://datamall.lta.gov.sg/content/datamall/en.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-zinc-900 text-zinc-600 transition-colors"
+              >
+                LTA DataMall
+              </a>{' '}
+              datasets from the Land Transport Authority of Singapore (LTA), which is made available under the terms of the{' '}
+              <a
+                href="https://datamall.lta.gov.sg/content/datamall/en/SingaporeOpenDataLicence.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-zinc-900 text-zinc-600 transition-colors"
+              >
+                Singapore Open Data Licence version 1.0
+              </a>
+              .
+            </p>
           </div>
 
           {/* Search Field */}
