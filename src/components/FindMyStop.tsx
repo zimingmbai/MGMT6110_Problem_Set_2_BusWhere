@@ -390,7 +390,39 @@ export const FindMyStop: React.FC<FindMyStopProps> = ({
         id="licence-footer"
         className="shrink-0 border-t border-zinc-200 px-4 sm:px-8 py-3 bg-zinc-50 text-[11px] sm:text-xs text-zinc-500 text-center leading-normal"
       >
-        Contains information from Bus Arrival API accessed via LTA DataMall which is made available under the terms of the Singapore Open Data Licence version 1.0
+        <p>
+          Contains information from Bus Arrival API accessed via LTA DataMall which is made available under the terms of the Singapore Open Data Licence version 1.0
+        </p>
+        <p className="mt-1 text-zinc-400">
+          This page uses Microsoft Clarity and Disqus, which use cookies to record how visitors use the site and to host comments. By using this page you agree that we and Microsoft may collect and use this data. See the{' '}
+          <a
+            href="https://www.microsoft.com/privacy/privacystatement"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-zinc-600 transition-colors"
+          >
+            Microsoft Privacy Statement
+          </a>
+          , the{' '}
+          <a
+            href="https://disqus.com/privacy-policy/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-zinc-600 transition-colors"
+          >
+            Disqus privacy policy
+          </a>{' '}
+          and the{' '}
+          <a
+            href="https://disqus.com/data-sharing-settings/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-zinc-600 transition-colors"
+          >
+            Disqus data sharing settings
+          </a>
+          .
+        </p>
       </footer>
     </div>
   );
