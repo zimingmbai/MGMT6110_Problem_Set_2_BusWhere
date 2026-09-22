@@ -52,11 +52,28 @@ export const DisqusComments: React.FC = () => {
   }, []);
 
   return (
-    <section id="disqus-comments-section" className="mt-12 pt-8 border-t border-zinc-200">
-      <p className="text-sm font-medium text-zinc-700 mb-4">
+    <section
+      id="disqus-comments-section"
+      className="mt-12 pt-8 border-t"
+      style={{
+        borderColor: 'rgb(228, 228, 231)',
+        color: 'rgb(24, 24, 27)',
+        backgroundColor: 'rgb(255, 255, 255)',
+      }}
+    >
+      <p
+        className="text-sm font-medium mb-4"
+        style={{ color: 'rgb(63, 63, 70)' }}
+      >
         Tell us what worked for you and what did not — your feedback helps us improve.
       </p>
-      <div id="disqus_thread" />
+      <div
+        id="disqus_thread"
+        style={{
+          color: 'rgb(24, 24, 27)',
+          backgroundColor: 'rgb(255, 255, 255)',
+        }}
+      />
       <noscript>
         Please enable JavaScript to view the{' '}
         <a href="https://disqus.com/?ref_noscript" className="underline text-red-600">
