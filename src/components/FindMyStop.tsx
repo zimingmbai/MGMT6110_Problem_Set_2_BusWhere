@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { Search, X, ArrowLeft, ChevronRight } from 'lucide-react';
 import { BusStop } from '../types';
 import { getAreaLabel } from '../data/areas';
+import { DisqusComments } from './DisqusComments';
 
 interface FindMyStopProps {
   searchQuery: string;
@@ -378,6 +379,9 @@ export const FindMyStop: React.FC<FindMyStopProps> = ({
               </div>
             </div>
           )}
+
+          {/* Disqus Comments */}
+          <DisqusComments />
         </div>
       </div>
 
