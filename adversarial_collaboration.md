@@ -38,8 +38,19 @@ predictions.md committed at 25 Sep 2026, 21:51; first comment for this set on my
   - There were no findings that displayed concerns about the design being overly minimalist.
 
 ## Q1. Where was confirmation bias in my own evaluation?
+- Confirmation bias appeared in how I gave more weight to issues I had already predicted.
+- Several predicted findings were also found by others, but I often rated them more severely, while missing several other issues I had not anticipated.
+- This suggests my expectations influenced both my attention and severity judgments.
 ## Q2. Which prediction broke, and what did it teach me?
+- My prediction that Visibility of System Status would be the worst heuristic broke.
+- Instead, the strongest shared concern was Aesthetic and Minimalist Design, especially the long area list identified by my team members.
+- Hence, my assumptions did not fully reflect what others found to be disruptive and reinforced the need for independent evaluation.
 ## Q3. Which groupmate finding did I nearly dismiss, and what did the evidence say?
+- I nearly dismissed the inability to search by bus service number.
+- The comparison showed that searching by service number was a meaningful use case.
+- This is a reminder to avoid undermining an issue simply because it did not strongly affect my own user flow.
 ## Q4. What did I revise, which heuristic does it serve, and how do I know it worked?
+- Initial Version: https://mgmt-6110-problem-set-2-bus-where-5qx3-picvp2bfi-zi-ming-mbai.vercel.app?_vercel_share=hTg76ViXg5ltdgq6AVDqQ4no8F26gEee
+- 
 ## Q5. What did my users give me that I could not have found myself?
 ## Q6. Did the AI help me confirm, or help me falsify?
