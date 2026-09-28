@@ -614,36 +614,6 @@ Judge the evidence, not the reviewers.
 ## GUARDRAILS
 
 Do not split the difference between A and B unless the evidence puts the rating there. If the evidence is too thin to decide, say so plainly instead of inventing a reason. Do not ask which reviewer built the product.
-
-
----
-
-# Arbiter Output
-
-Yes. **A and B are describing the same underlying problem**: the homepage repeatedly displays a **“Code prefix”** beside each area without a clear user-facing purpose. They disagree about the interpretation and repair—A says remove it; B says explain it—but the observed UI issue is the same.
-
-| Factor | What the evidence shows | What it cannot show |
-|---|---|---|
-| **How often it happens** | The label appears under every area, reportedly across all 89 rows. Two of four reviewers independently noticed it. So whenever someone browses this list, the issue is repeatedly present. | We do not know how often real users browse the Areas list, notice the prefix, or try to understand it. “2 of 4 reviewers” measures evaluator detection, not user frequency. |
-| **What it costs when it happens** | The demonstrated cost is low. Users can still select an area by name and continue their task. At most, the evidence supports visual clutter or failure to understand a potentially quicker code-based search method. | There is no evidence of task failure, significant delay, wrong bus information, navigation errors, or users abandoning the app because of it. |
-| **Whether users can learn around it** | Users can apparently ignore the prefix completely and still use the area names. B was also able to infer its meaning from other interface cues. | We do not know whether ordinary users would make the same inference, how long that would take, or whether they would remember it later. |
-| **Whether it disproportionately damages the product's standing** | No evidence shows reputational or trust damage. Technical-looking unexplained information could make the interface feel less polished, but that is all the supplied evidence establishes. | We cannot conclude that users perceive the app as unreliable, confusing, or unprofessional because of this label. |
-
-## Supported severity: 1 — Cosmetic problem
-
-The deciding factor is **cost when it happens**. The evidence does not demonstrate meaningful interference with the user's core tasks of finding a bus or its journey/arrival time. The information can be ignored without blocking progress. The repeated clutter is real, but repetition alone does not raise severity without evidence of consequential confusion or task degradation.
-
-The evidence therefore supports **1 rather than 2**. A severity of 2 would need some observable minor usability consequence beyond visual or explanatory clutter.
-
-## One observation that would change the rating
-
-The most useful observation would be:
-
-**Real users hesitate, make errors, or take noticeably longer because they misunderstand “Code prefix,” especially when trying to find a stop by code.**
-
-This could be collected quickly with a small usability test: give roughly **5 users a task such as “Find this bus stop using its stop code”**, without explaining the interface, and observe whether the prefix causes confusion, incorrect actions, or measurable delay.
-
-If that behaviour occurs consistently, there would be evidence for raising the issue to **severity 2**.
 ```
 
 ### Response
