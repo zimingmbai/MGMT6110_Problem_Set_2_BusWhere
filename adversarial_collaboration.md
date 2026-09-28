@@ -28,14 +28,13 @@ predictions.md committed at 25 Sep 2026, 21:51; first comment for this set on my
 | 4 | Unexplained Code/Area Prefix | Keziah | my severity 2, Keziah severity 1 | 1 |
 
 ## My predictions, checked
-- Expected finding 1: [HELD, BROKE OR CANNOT TELL, WITH THE SEVERITY THEY GAVE
-  BESIDE THE ONE I EXPECTED], because [ONE SENTENCE]
-- Expected finding 2: [THE SAME]
-- Expected finding 3: [THE SAME]
-- The heuristic I named as my product's worst: [HELD, BROKE OR CANNOT TELL],
-  because [ONE SENTENCE]
-- The finding that would show my evaluation was wrong: [RAISED OR NOT RAISED],
-  because [ONE SENTENCE]
+- Expected Finding 2: Long List of Area and Search Results > HELD (Me 3, YiMing 1, Keziah 2, Gillian 3)
+- Expected Finding 3: Code Prefix > HELD (Me 2, Keziah 1)
+- Expected Finding 6: Unable to Save Bus Stops or Services > HELD (Me 3, YiMing 1, Keziah 2)
+- The heuristic I named as my product's worst: 1. Visibility of System Status > BROKE
+  - The Worse Finding is under Heuristic 8 (Aesthetic and Minimalist Design), due to the Long List of Areas for scrolling
+- The finding that would show my evaluation was wrong: NOT RAISED
+  - There were no findings that displayed concerns about the design being overly minimalist.
 
 ## Q1. Where was confirmation bias in my own evaluation?
 ## Q2. Which prediction broke, and what did it teach me?
