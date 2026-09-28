@@ -550,3 +550,126 @@ Per the instruction to stop if the reviewers are not describing the same problem
 
 ### 4. Unexplained Code/Area Prefix
 ### Prompt
+```
+# Usability Heuristic Severity Arbitration
+
+## Prompt
+
+ROLE: You are a neutral arbiter between two usability reviewers who rated the same problem differently. You do not know which of them built the product. Do not try to work it out.
+
+CONTEXT: The product is an AI-augmented web app. It is for regular public bus users to find out their buses arrival timings, as well as how long their bus trip will take.
+
+Both reviewers inspected it against Nielsen's ten usability heuristics and rated the problem on this severity scale:
+
+- 0 I don't agree that this is a usability problem at all.
+- 1 Cosmetic problem only. Need not be fixed unless extra time is available.
+- 2 Minor usability problem. Fixing this should be given low priority.
+- 3 Major usability problem. Important to fix, so should be given high priority.
+- 4 Usability catastrophe. Imperative to fix before the product can be released.
+
+A rating rests on four factors:
+
+- how often the problem happens
+- what it costs when it does
+- whether the person can learn around it
+- whether it damages the product's standing out of proportion
+
+### REVIEWER A
+
+- Where: https://mgmt-6110-problem-set-2-bus-where-5.vercel.app/ - Homepage
+- What I did, what I saw:
+  - The area categories have a Code Prefix
+  - This is not relevant to a real-world user, and is only an identifier for the backend.
+  - Hence, it is unnecessary info which does not help the user
+- Which heuristic: 2 - Match Between the System and the Real World
+- Screen or system: Screen
+- Severity, and why: 2
+  - The app's usability is not affected
+  - This is mainly aesthetic.
+- The repair: Remove the Code Prefix line
+
+### REVIEWER B
+
+- **Where**: Home screen, the "Code prefix" line under every area in the Singapore Areas list (e.g. "Ang Mo Kio · Code prefix 54")
+- **What I did, what I saw**: While scrolling through the Areas list, I noticed every area shows a "Code prefix" (81, 54, 50, and so on). Nothing on the page explained what it meant. I eventually guessed it was the first two digits of the stop codes in that area, but only because the search box mentions searching "by code." There's no tooltip, help link, or example showing how stop codes work, even though the app relies on them for searching. The only explanatory text at the top is the LTA DataMall licence notice, which explains where the data comes from, not how to use it.
+- **Which heuristic:** 10. Help and Documentation
+- Screen or system: Screen. It can fix this on its own with what it already has: the meaning of a code prefix is fixed, so a short tooltip or a one-line note ("Stop codes are the 5-digit number on every bus stop sign; the first two digits show the area") needs no new data.
+- **Severity, and why**: 1 (cosmetic). The driver is low impact: users who ignore the prefix can still pick an area by name, but those who don't understand stop codes miss a faster way to search, and the unexplained label adds clutter to all 89 rows.
+- **The repair**: A user understands what a code prefix is and how it helps them. The screen explains stop codes briefly, ideally with an example from a real bus stop sign, and links that explanation to the search box so users learn they can type a stop code directly.
+
+### EVIDENCE NEITHER REVIEWER CONTROLS
+
+- Reviewers who raised this problem independently, counting A and B: 2 out of 4 Reviewers
+- Severities that reviewers other than A and B gave this problem: NONE
+
+## GOAL
+
+Judge the evidence, not the reviewers.
+
+1. Say whether A and B describe the same problem. If they do not, say so and stop.
+2. For each of the four factors, say what the evidence shows and what it cannot show.
+3. Give the severity the evidence supports, and name the factor that decided it.
+4. Name the one observation that would change your rating, and say how it could be collected quickly.
+
+## GUARDRAILS
+
+Do not split the difference between A and B unless the evidence puts the rating there. If the evidence is too thin to decide, say so plainly instead of inventing a reason. Do not ask which reviewer built the product.
+
+
+---
+
+# Arbiter Output
+
+Yes. **A and B are describing the same underlying problem**: the homepage repeatedly displays a **“Code prefix”** beside each area without a clear user-facing purpose. They disagree about the interpretation and repair—A says remove it; B says explain it—but the observed UI issue is the same.
+
+| Factor | What the evidence shows | What it cannot show |
+|---|---|---|
+| **How often it happens** | The label appears under every area, reportedly across all 89 rows. Two of four reviewers independently noticed it. So whenever someone browses this list, the issue is repeatedly present. | We do not know how often real users browse the Areas list, notice the prefix, or try to understand it. “2 of 4 reviewers” measures evaluator detection, not user frequency. |
+| **What it costs when it happens** | The demonstrated cost is low. Users can still select an area by name and continue their task. At most, the evidence supports visual clutter or failure to understand a potentially quicker code-based search method. | There is no evidence of task failure, significant delay, wrong bus information, navigation errors, or users abandoning the app because of it. |
+| **Whether users can learn around it** | Users can apparently ignore the prefix completely and still use the area names. B was also able to infer its meaning from other interface cues. | We do not know whether ordinary users would make the same inference, how long that would take, or whether they would remember it later. |
+| **Whether it disproportionately damages the product's standing** | No evidence shows reputational or trust damage. Technical-looking unexplained information could make the interface feel less polished, but that is all the supplied evidence establishes. | We cannot conclude that users perceive the app as unreliable, confusing, or unprofessional because of this label. |
+
+## Supported severity: 1 — Cosmetic problem
+
+The deciding factor is **cost when it happens**. The evidence does not demonstrate meaningful interference with the user's core tasks of finding a bus or its journey/arrival time. The information can be ignored without blocking progress. The repeated clutter is real, but repetition alone does not raise severity without evidence of consequential confusion or task degradation.
+
+The evidence therefore supports **1 rather than 2**. A severity of 2 would need some observable minor usability consequence beyond visual or explanatory clutter.
+
+## One observation that would change the rating
+
+The most useful observation would be:
+
+**Real users hesitate, make errors, or take noticeably longer because they misunderstand “Code prefix,” especially when trying to find a stop by code.**
+
+This could be collected quickly with a small usability test: give roughly **5 users a task such as “Find this bus stop using its stop code”**, without explaining the interface, and observe whether the prefix causes confusion, incorrect actions, or measurable delay.
+
+If that behaviour occurs consistently, there would be evidence for raising the issue to **severity 2**.
+```
+
+### Response
+```
+Yes. **A and B are describing the same underlying problem**: the homepage repeatedly displays a **“Code prefix”** beside each area without a clear user-facing purpose. They disagree about the interpretation and repair—A says remove it; B says explain it—but the observed UI issue is the same.
+
+| Factor | What the evidence shows | What it cannot show |
+|---|---|---|
+| **How often it happens** | The label appears under every area, reportedly across all 89 rows. Two of four reviewers independently noticed it. So whenever someone browses this list, the issue is repeatedly present. | We do not know how often real users browse the Areas list, notice the prefix, or try to understand it. “2 of 4 reviewers” measures evaluator detection, not user frequency. |
+| **What it costs when it happens** | The demonstrated cost is low. Users can still select an area by name and continue their task. At most, the evidence supports visual clutter or failure to understand a potentially quicker code-based search method. | There is no evidence of task failure, significant delay, wrong bus information, navigation errors, or users abandoning the app because of it. |
+| **Whether users can learn around it** | Users can apparently ignore the prefix completely and still use the area names. B was also able to infer its meaning from other interface cues. | We do not know whether ordinary users would make the same inference, how long that would take, or whether they would remember it later. |
+| **Whether it disproportionately damages the product's standing** | No evidence shows reputational or trust damage. Technical-looking unexplained information could make the interface feel less polished, but that is all the supplied evidence establishes. | We cannot conclude that users perceive the app as unreliable, confusing, or unprofessional because of this label. |
+
+## Supported severity: 1 — Cosmetic problem
+
+The deciding factor is **cost when it happens**. The evidence does not demonstrate meaningful interference with the user's core tasks of finding a bus or its journey/arrival time. The information can be ignored without blocking progress. The repeated clutter is real, but repetition alone does not raise severity without evidence of consequential confusion or task degradation.
+
+The evidence therefore supports **1 rather than 2**. A severity of 2 would need some observable minor usability consequence beyond visual or explanatory clutter.
+
+## One observation that would change the rating
+
+The most useful observation would be:
+
+**Real users hesitate, make errors, or take noticeably longer because they misunderstand “Code prefix,” especially when trying to find a stop by code.**
+
+This could be collected quickly with a small usability test: give roughly **5 users a task such as “Find this bus stop using its stop code”**, without explaining the interface, and observe whether the prefix causes confusion, incorrect actions, or measurable delay.
+
+If that behaviour occurs consistently, there would be evidence for raising the issue to **severity 2**.
+```
