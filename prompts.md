@@ -347,4 +347,95 @@ A quick way to collect it would be a short usability test with several regular b
 If a substantial proportion cannot complete the task or must leave the app to determine the stop, that would provide evidence for raising the severity to **3**.
 ```
 
+---
 ### 2. Unable to Bookmark Bus Stop and Bus Service
+### Prompt
+```
+ROLE: You are a neutral arbiter between two usability reviewers who rated the same problem differently. You do not know which of them built the product. Do not try to work it out.
+
+CONTEXT: The product is an AI-augmented web app. It is for regular public bus users to find out their buses arrival timings, as well as how long their bus trip will take.
+
+Both reviewers inspected it against Nielsen's ten usability heuristics and rated the problem on this severity scale:
+
+- 0 I don't agree that this is a usability problem at all.
+- 1 Cosmetic problem only. Need not be fixed unless extra time is available.
+- 2 Minor usability problem. Fixing this should be given low priority.
+- 3 Major usability problem. Important to fix, so should be given high priority.
+- 4 Usability catastrophe. Imperative to fix before the product can be released.
+
+A rating rests on four factors:
+
+- how often the problem happens
+- what it costs when it does
+- whether the person can learn around it
+- whether it damages the product's standing out of proportion
+
+REVIEWER A:
+
+Where: https://mgmt-6110-problem-set-2-bus-where-5.vercel.app/ - Homepage
+
+- What I did, what I saw:
+  - For regular users, there is no way to save their bus stop or bus service
+  - Hence, they will need to go through multiple taps of the same flow everyday
+- Which heuristic: 7 - Flexibility and Efficiency of Use
+- Screen or system: Screen
+- Severity, and why: 3
+  - An elongated and repeated flow to achieve the a straightforward outcome can build up frustration for a user, leading to churn.
+- The repair: Include an option for the user to save their frequently used bus stops or bus services. This can even be a dashboard of their selected bus timings.
+
+REVIEWER B:
+
+- **Where**: The search results stop card ("77039 Pasir Ris Int/Mall") and the bus route panel that opens when a service is tapped (e.g. "39B To Pasir Ris Int/Mall")
+- **What I did, what I saw**: I searched for my stop by typing its code, 77039, and got "1 stop found": Pasir Ris Int/Mall, with its bus services (39, 39B, 53, 53A, 81, 89, 89A, 109, 518, 518A). I tapped 39B to see its route. Neither the stop card nor the route panel has a star, save, or "add to favourites" option, and the home screen has no recent stops, only the 89-area list. So the next time I want to check the same stop, I have to type the five-digit code again or scroll through the areas to find it. For a commuter who checks the same stop and bus twice a day, every visit repeats the same steps.
+- **Which heuristic**: 7. Flexibility and Efficiency of Use
+- **Screen or system**: Screen. It can fix this on its own with what it already has: the stop code, stop name and service numbers are already on the page, so the screen can save favourite stops and services in the browser and show them first on the home screen. The system is only needed if favourites should sync across devices, which would require user accounts.
+- **Severity, and why**: 2 (minor). Just additional layer. It doesn't stop anyone from getting bus information, but it affects every regular user on every visit, and regular commuters are the app's main audience.
+- **The repair**: A returning user reaches their usual stop and bus in one tap. Stops and services can be starred, recent searches appear automatically, and both show at the top of the home screen above the Areas list.
+
+EVIDENCE NEITHER REVIEWER CONTROLS:
+
+- Reviewers who raised this problem independently, counting A and B: 4 out of 4 Reviewers
+- Severities that reviewers other than A and B gave this problem: 1 and 3
+
+GOAL: Judge the evidence, not the reviewers.
+
+1. Say whether A and B describe the same problem. If they do not, say so and stop.
+2. For each of the four factors, say what the evidence shows and what it cannot show.
+3. Give the severity the evidence supports, and name the factor that decided it.
+4. Name the one observation that would change your rating, and say how it could be collected quickly.
+
+GUARDRAILS: Do not split the difference between A and B unless the evidence puts the rating there. If the evidence is too thin to decide, say so plainly instead of inventing a reason. Do not ask which reviewer built the product.
+```
+
+### Response
+```
+Yes. **A and B are describing the same underlying usability problem**: returning users cannot save or quickly re-access frequently used stops/services, forcing them to repeat the search/navigation flow. B gives more specific observations, but the problem and heuristic are the same.
+
+| Severity factor | What the evidence shows | What it cannot show |
+|---|---|---|
+| **How often it happens** | Strong evidence that the issue is readily encountered: **4/4 reviewers independently identified it**. For someone repeatedly checking the same stop/service, the extra interaction recurs whenever they return. | It does not establish how many actual users repeatedly check the same stops, nor how many times per day they do so. The "twice a day" scenario is plausible but not measured evidence. |
+| **What it costs when it happens** | The user must repeat search/navigation steps instead of immediately reaching a familiar stop or service. | There is no evidence of task failure, incorrect information, substantial delays, or users being unable to obtain arrival/trip information. The actual additional time and effort have not been measured. |
+| **Whether the person can learn around it** | Users can still accomplish the task by remembering a stop code, searching again, or navigating through Areas. Familiarity may make the repeated flow easier. | Learning does **not remove the repeated interaction**. There is no evidence showing whether experienced users find the workaround negligible or persistently frustrating. |
+| **Whether it disproportionately damages the product's standing** | All four reviewers noticing it suggests the omission is conspicuous in an app intended for repeat bus use. | There is no evidence supporting A's claim that it causes **churn**, or showing damage to trust, perceived quality, recommendations, retention, etc. |
+
+### Supported severity: **2 — Minor usability problem**
+
+The evidence supports **2**, rather than simply averaging A's 3 and B's 2.
+
+The **deciding factor is the cost when the problem occurs**. The problem can happen repeatedly and is clearly relevant to regular users, which makes it more than merely cosmetic. But the evidence currently shows **additional effort rather than serious task disruption**: users can still obtain the bus information successfully, and there is no measured evidence of substantial delay, abandonment, or downstream consequences.
+
+The unanimous **4/4 detection strengthens confidence that the problem is real**, but agreement that a problem exists does not by itself establish severity 3. The other reviewers' ratings of **1 and 3** also show that its impact is not yet empirically settled.
+
+### One observation that would change the rating
+
+**Observe whether the repeated flow creates substantial real-world cost for returning users—for example, frequent abandonment or a meaningful delay when they need to check a familiar bus quickly.**
+
+A quick way to collect this would be a short repeated-use test with regular commuters: have them retrieve the same familiar stop/service several times, measure completion time and abandonment/frustration, and ask immediately afterward whether the repeated search materially interfered with the task.
+
+If users consistently lose meaningful time, abandon the task, or experience serious difficulty because they cannot save their usual stop/service, I would move the rating to **3**.
+```
+
+---
+
+### 3. Long Areas List Scrolling
+
