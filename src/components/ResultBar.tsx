@@ -7,6 +7,7 @@ interface ResultBarProps {
   destinationName?: string;
   hasDestination: boolean;
   statusSentence?: string;
+  isNoService?: boolean;
 }
 
 export const ResultBar: React.FC<ResultBarProps> = ({
@@ -14,6 +15,7 @@ export const ResultBar: React.FC<ResultBarProps> = ({
   destinationName,
   hasDestination,
   statusSentence,
+  isNoService,
 }) => {
   const [showInfo, setShowInfo] = useState(false);
 
@@ -55,23 +57,35 @@ export const ResultBar: React.FC<ResultBarProps> = ({
   }
 
   const { hasLiveTiming, minutesToBoarding, rideDurationMinutes, arrivalClockTime } = calculation;
+  const isUnavailable = Boolean(isNoService);
 
   // Format representations strictly per spec:
-  // Live: "26 min ride", "arrive 9:14am"
+  // Live: "26 min ride", "arrive 9:14am", or "Arriving" when 0 min
   // Worked-out: "~25 min ride", "arrive around 9:13am" in muted text colour
-  const boardingArrivalText = hasLiveTiming
-    ? `bus in ${minutesToBoarding} min`
+  // Inactive / No service: "Not Available" across arrival, ride length, and destination
+  const boardingArrivalText = isUnavailable
+    ? 'Not Available'
+    : hasLiveTiming
+    ? minutesToBoarding <= 0
+      ? 'Arriving'
+      : `bus in ${minutesToBoarding} min`
     : `bus in ~${minutesToBoarding} min`;
 
-  const rideLengthText = hasLiveTiming
+  const rideLengthText = isUnavailable
+    ? 'Not Available'
+    : hasLiveTiming
     ? `${rideDurationMinutes} min ride`
     : `~${rideDurationMinutes} min ride`;
 
-  const destinationArrivalText = hasLiveTiming
+  const destinationArrivalText = isUnavailable
+    ? 'Not Available'
+    : hasLiveTiming
     ? `arrive ${arrivalClockTime}`
     : `arrive around ${arrivalClockTime}`;
 
-  const infoMessage = hasLiveTiming
+  const infoMessage = isUnavailable
+    ? 'This service is not running right now; arrival and trip duration estimates are not available.'
+    : hasLiveTiming
     ? 'Comes from current bus arrival times. Traffic conditions may vary.'
     : statusSentence
     ? `${statusSentence} Duration is calculated using the assumed average bus speed (18 km/h).`
@@ -116,7 +130,13 @@ export const ResultBar: React.FC<ResultBarProps> = ({
       <div className="grid grid-cols-3 items-baseline gap-2 sm:gap-3 divide-x divide-zinc-200">
         {/* Number 1: Minutes until bus reaches boarding stop */}
         <div className="pr-1 sm:pr-2">
-          <div className="text-base sm:text-xl md:text-2xl font-bold tracking-tight text-zinc-900 leading-tight">
+          <div
+            className={`tracking-tight leading-tight ${
+              isUnavailable
+                ? 'text-xs sm:text-sm md:text-base font-bold text-zinc-500'
+                : 'text-base sm:text-xl md:text-2xl font-bold text-zinc-900'
+            }`}
+          >
             {boardingArrivalText}
           </div>
           <div className="text-[10px] sm:text-xs text-zinc-400 uppercase tracking-wider mt-1 font-medium">
@@ -128,8 +148,12 @@ export const ResultBar: React.FC<ResultBarProps> = ({
         <div className="px-2 sm:px-3">
           <div className="flex items-center gap-1">
             <span
-              className={`text-base sm:text-xl md:text-2xl font-bold tracking-tight leading-tight ${
-                hasLiveTiming ? 'text-zinc-900' : 'text-zinc-400 font-medium'
+              className={`tracking-tight leading-tight ${
+                isUnavailable
+                  ? 'text-xs sm:text-sm md:text-base font-bold text-zinc-500'
+                  : hasLiveTiming
+                  ? 'text-base sm:text-xl md:text-2xl font-bold text-zinc-900'
+                  : 'text-base sm:text-xl md:text-2xl font-bold text-zinc-400 font-medium'
               }`}
             >
               {rideLengthText}
@@ -158,8 +182,12 @@ export const ResultBar: React.FC<ResultBarProps> = ({
         {/* Number 3: Clock time arrived at destination */}
         <div className="pl-2 sm:pl-3">
           <div
-            className={`text-base sm:text-xl md:text-2xl font-bold tracking-tight leading-tight ${
-              hasLiveTiming ? 'text-zinc-900' : 'text-zinc-400 font-medium'
+            className={`tracking-tight leading-tight ${
+              isUnavailable
+                ? 'text-xs sm:text-sm md:text-base font-bold text-zinc-500'
+                : hasLiveTiming
+                ? 'text-base sm:text-xl md:text-2xl font-bold text-zinc-900'
+                : 'text-base sm:text-xl md:text-2xl font-bold text-zinc-400 font-medium'
             }`}
           >
             {destinationArrivalText}

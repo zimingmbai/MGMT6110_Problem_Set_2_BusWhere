@@ -161,7 +161,9 @@ export function getMinutesForService(
         firstBusArrivalIso = bus.estimatedArrival;
       }
       const busTime = new Date(bus.estimatedArrival).getTime();
-      const diffMin = Math.max(0, Math.round((busTime - now) / 60000));
+      const diffMs = busTime - now;
+      // Map 0 min or < 1 min directly to 0 (which translates to 'Arriving')
+      const diffMin = diffMs < 60000 ? 0 : Math.round(diffMs / 60000);
       arrivalMinutes.push(diffMin);
     }
   }
@@ -177,7 +179,7 @@ export function getMinutesForService(
 
   return {
     status: 'success',
-    sentence: `Next: ${arrivalMinutes.map((m) => `${m} min`).join(', ')}`,
+    sentence: `Next: ${arrivalMinutes.map((m) => (m <= 0 ? 'Arriving' : `${m} min`)).join(', ')}`,
     arrivalMinutes,
     firstBusArrivalIso,
   };

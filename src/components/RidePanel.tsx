@@ -47,9 +47,18 @@ export const RidePanel: React.FC<RidePanelProps> = ({
   // Live arrivals state
   const [boardingData, setBoardingData] = useState<StopArrivalData | null>(null);
   const [boardingLoading, setBoardingLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<number | null>(null);
 
   const [destinationData, setDestinationData] = useState<StopArrivalData | null>(null);
   const [destinationLoading, setDestinationLoading] = useState(false);
+
+  const formatUpdatedTime = (timestamp: number) => {
+    return new Date(timestamp).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+  };
 
   // 1. Load /routes.json and read the one service needed
   useEffect(() => {
@@ -143,19 +152,22 @@ export const RidePanel: React.FC<RidePanelProps> = ({
     }
   }, [serviceNumber, boardingStopCode, direction]);
 
-  // Fetch live arrivals for boarding stop
+  // Fetch live arrivals for boarding stop with 20-second refetch threshold
   useEffect(() => {
     let isMounted = true;
-    setBoardingLoading(true);
 
-    getStopArrivals(boardingStopCode)
-      .then((data) => {
+    const fetchBoardingArrivals = async (isBackground = false) => {
+      if (!isBackground) {
+        setBoardingLoading(true);
+      }
+      try {
+        const data = await getStopArrivals(boardingStopCode, isBackground);
         if (isMounted) {
           setBoardingData(data);
           setBoardingLoading(false);
+          setLastUpdated(data.timestamp || Date.now());
         }
-      })
-      .catch(() => {
+      } catch {
         if (isMounted) {
           setBoardingData({
             stopCode: boardingStopCode,
@@ -165,15 +177,24 @@ export const RidePanel: React.FC<RidePanelProps> = ({
             timestamp: Date.now(),
           });
           setBoardingLoading(false);
+          setLastUpdated(Date.now());
         }
-      });
+      }
+    };
+
+    fetchBoardingArrivals(false);
+
+    const intervalId = setInterval(() => {
+      fetchBoardingArrivals(true);
+    }, 20000);
 
     return () => {
       isMounted = false;
+      clearInterval(intervalId);
     };
   }, [boardingStopCode, serviceNumber]);
 
-  // Fetch live arrivals for destination stop when selected
+  // Fetch live arrivals for destination stop when selected with 20-second refetch threshold
   useEffect(() => {
     if (!destinationStopCode) {
       setDestinationData(null);
@@ -182,16 +203,18 @@ export const RidePanel: React.FC<RidePanelProps> = ({
     }
 
     let isMounted = true;
-    setDestinationLoading(true);
 
-    getStopArrivals(destinationStopCode)
-      .then((data) => {
+    const fetchDestinationArrivals = async (isBackground = false) => {
+      if (!isBackground) {
+        setDestinationLoading(true);
+      }
+      try {
+        const data = await getStopArrivals(destinationStopCode, isBackground);
         if (isMounted) {
           setDestinationData(data);
           setDestinationLoading(false);
         }
-      })
-      .catch(() => {
+      } catch {
         if (isMounted) {
           setDestinationData({
             stopCode: destinationStopCode,
@@ -202,10 +225,18 @@ export const RidePanel: React.FC<RidePanelProps> = ({
           });
           setDestinationLoading(false);
         }
-      });
+      }
+    };
+
+    fetchDestinationArrivals(false);
+
+    const intervalId = setInterval(() => {
+      fetchDestinationArrivals(true);
+    }, 20000);
 
     return () => {
       isMounted = false;
+      clearInterval(intervalId);
     };
   }, [destinationStopCode, serviceNumber]);
 
@@ -223,6 +254,8 @@ export const RidePanel: React.FC<RidePanelProps> = ({
     boardingLoading ? null : boardingData,
     serviceNumber
   );
+
+  const isNoService = !boardingLoading && boardingInfo.status === 'empty';
 
   const destinationInfo = destinationStopCode
     ? getMinutesForService(destinationLoading ? null : destinationData, serviceNumber)
@@ -335,11 +368,22 @@ export const RidePanel: React.FC<RidePanelProps> = ({
                 <span className="text-zinc-400 ml-1">({boardingStopCode})</span>
               </div>
 
-              {boardingInfo.status === 'success' ? (
-                <div className="text-xs font-bold text-red-600">
-                  Next: {boardingInfo.arrivalMinutes.map((m) => `${m} min`).join(', ')}
-                </div>
-              ) : null}
+              <div className="text-right shrink-0">
+                {boardingInfo.status === 'success' ? (
+                  <div className="text-xs font-bold text-red-600">
+                    Next: {boardingInfo.arrivalMinutes.map((m) => (m <= 0 ? 'Arriving' : `${m} min`)).join(', ')}
+                  </div>
+                ) : isNoService ? (
+                  <div className="text-xs font-bold text-zinc-500">
+                    No Service
+                  </div>
+                ) : null}
+                {lastUpdated && (
+                  <div id="last-updated-indicator" className="text-[10px] text-zinc-400 mt-0.5">
+                    Updated at {formatUpdatedTime(lastUpdated)}
+                  </div>
+                )}
+              </div>
             </div>
 
             {boardingInfo.status !== 'success' && (
@@ -449,9 +493,15 @@ export const RidePanel: React.FC<RidePanelProps> = ({
 
                           {/* State Badges */}
                           {isBoarding && (
-                            <span className="px-2 py-0.5 text-[11px] font-bold bg-red-600 text-white uppercase tracking-wider">
-                              Boarding
-                            </span>
+                            isNoService ? (
+                              <span className="px-2 py-0.5 text-[11px] font-bold bg-zinc-600 text-white uppercase tracking-wider">
+                                No Service
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 text-[11px] font-bold bg-red-600 text-white uppercase tracking-wider">
+                                Boarding
+                              </span>
+                            )
                           )}
                           {isDestination && (
                             <span className="px-2 py-0.5 text-[11px] font-bold bg-zinc-900 text-white uppercase tracking-wider">
@@ -463,12 +513,16 @@ export const RidePanel: React.FC<RidePanelProps> = ({
                         {/* Live arrival or distance tag */}
                         <div className="text-right shrink-0 text-xs">
                           {isBoarding ? (
-                            boardingInfo.status === 'loading' ? (
+                            boardingLoading ? (
                               <span className="text-zinc-400 font-mono">...</span>
+                            ) : isNoService ? (
+                              <span className="font-semibold text-zinc-500">No Service</span>
                             ) : boardingInfo.status === 'success' &&
                               boardingInfo.arrivalMinutes.length > 0 ? (
                               <span className="font-bold text-red-600">
-                                {boardingInfo.arrivalMinutes[0]} min
+                                {boardingInfo.arrivalMinutes[0] <= 0
+                                  ? 'Arriving'
+                                  : `${boardingInfo.arrivalMinutes[0]} min`}
                               </span>
                             ) : (
                               <span className="text-zinc-400">~7 min</span>
@@ -476,11 +530,15 @@ export const RidePanel: React.FC<RidePanelProps> = ({
                           ) : isDestination ? (
                             destinationLoading ? (
                               <span className="text-zinc-400 font-mono">...</span>
+                            ) : destinationInfo && destinationInfo.status === 'empty' ? (
+                              <span className="font-semibold text-zinc-500">No Service</span>
                             ) : destinationInfo &&
                               destinationInfo.status === 'success' &&
                               destinationInfo.arrivalMinutes.length > 0 ? (
                               <span className="font-bold text-zinc-900 font-mono">
-                                {destinationInfo.arrivalMinutes[0]} min
+                                {destinationInfo.arrivalMinutes[0] <= 0
+                                  ? 'Arriving'
+                                  : `${destinationInfo.arrivalMinutes[0]} min`}
                               </span>
                             ) : (
                               <span className="text-zinc-400 font-mono">
@@ -519,6 +577,7 @@ export const RidePanel: React.FC<RidePanelProps> = ({
               destinationName={destinationDetails?.name}
               hasDestination={Boolean(destinationStopCode)}
               statusSentence={statusSentence}
+              isNoService={isNoService}
             />
           </div>
         </>
