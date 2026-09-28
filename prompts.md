@@ -241,3 +241,110 @@ Links
 - Keep as it is for now. Workable prototype, with room for improvement in user experience.
 
 ---
+
+---
+## Arbiter Exchange
+### Found by both, rated differently
+
+### 1. Unable to Search by Bus Service Number
+### Prompt
+```
+# ROLE
+
+You are a neutral arbiter between two usability reviewers who rated the same problem differently. You do not know which of them built the product. Do not try to work it out.
+
+# CONTEXT
+
+The product is an AI-augmented web app. It is for regular public bus users to find out their buses arrival timings, as well as how long their bus trip will take.
+
+Both reviewers inspected it against Nielsen's ten usability heuristics and rated the problem on this severity scale:
+
+- 0 I don't agree that this is a usability problem at all.
+- 1 Cosmetic problem only. Need not be fixed unless extra time is available.
+- 2 Minor usability problem. Fixing this should be given low priority.
+- 3 Major usability problem. Important to fix, so should be given high priority.
+- 4 Usability catastrophe. Imperative to fix before the product can be released.
+
+A rating rests on four factors:
+
+- how often the problem happens
+- what it costs when it does
+- whether the person can learn around it
+- whether it damages the product's standing out of proportion
+
+# REVIEWER A
+
+**Where:** [https://mgmt-6110-problem-set-2-bus-where-5.vercel.app/](https://mgmt-6110-problem-set-2-bus-where-5.vercel.app/) - Homepage
+
+- **What I did, what I saw:**
+  - The app requires a user to know their bus stop first, before being able to choose their bus service number to check ETA
+  - An entry point directly based on bus number, would be useful
+- **Which heuristic:** 7 - Flexibility and Efficiency of Use
+- **Screen or system:** Screen
+- **Severity, and why:** 2
+  - This can be potentially an add-on feature for users
+- **The repair:** There can be an option to check bus timings using 2 entry points. i.e. Bus Stop or Bus Service Number
+
+# REVIEWER B
+
+- **Where:** [https://mgmt-6110-problem-s...](https://disq.us/url?url=https%3A%2F%2Fmgmt-6110-problem-set-2-bus-where-5.vercel.app%2F%3AXQRM2bnXc4y8PgYfw_OH-OKToj8&cuid=7870739 "https://mgmt-6110-problem-set-2-bus-where-5.vercel.app/"), on the search page.
+- **What I did, what I saw:** I tried to search a bus service e.g. bus 50, and the results return 282 bus stops.
+- **Which heuristic:** 6, Recognition Rather than Recall.
+- **Screen or system:** Screen. A user has to recall the bus stop name, bus stop code or street name.
+- **Severity, and why:** 3. A frequent rider of a particular bus service would recognize the bus service number more than bus stop name or bus stop code.
+- **The repair:** Allow user to search by bus service number.
+
+# EVIDENCE NEITHER REVIEWER CONTROLS
+
+- Reviewers who raised this problem independently, counting A and B: 2 out of 4 Reviewers
+- Severities that reviewers other than A and B gave this problem: NONE
+
+# GOAL
+
+Judge the evidence, not the reviewers.
+
+1. Say whether A and B describe the same problem. If they do not, say so and stop.
+2. For each of the four factors, say what the evidence shows and what it cannot show.
+3. Give the severity the evidence supports, and name the factor that decided it.
+4. Name the one observation that would change your rating, and say how it could be collected quickly.
+
+# GUARDRAILS
+
+Do not split the difference between A and B unless the evidence puts the rating there. If the evidence is too thin to decide, say so plainly instead of inventing a reason. Do not ask which reviewer built the product.
+```
+
+### Response
+```
+Yes. **A and B are describing the same underlying problem:** the app does not provide an effective **bus-service-number-first path** to arrival information. A frames it as lack of flexibility; B frames it as excessive recall. Those are different heuristic interpretations of the same interaction problem.
+
+## 1. Four severity factors
+
+| Factor | What the evidence shows | What it cannot show |
+|---|---|---|
+| **Frequency** | **2 of 4 reviewers independently noticed the issue**, so it is not an isolated observation. B also encountered it directly when searching for bus 50. | This does not establish how often real users encounter it. We do not know what proportion of users begin with a bus number rather than a bus stop. |
+| **Cost when it happens** | Users who know the bus service but not the stop cannot go directly to the ETA they want. B's example produced **282 bus-stop results**, suggesting potentially substantial search effort. | There is no evidence of actual task failure, time lost, abandonment, or users being unable to obtain the information eventually. |
+| **Can users learn around it?** | There appears to be a workaround: identify/search for the relevant bus stop first and then select the service. | We do not know whether ordinary users can do this easily, whether they already know their stop names/codes, or whether they need another app/source to find them. |
+| **Damage to product standing** | No evidence supplied. | We cannot infer that this problem materially reduces trust, perceived quality, or willingness to use the product. |
+
+## 2. Supported severity
+
+**Severity: 2 — Minor usability problem.**
+
+The deciding factor is **cost when the problem occurs**.
+
+There is enough evidence to establish genuine friction, so a 0 or 1 is difficult to justify. However, the current evidence does **not** show task failure, severe delay, abandonment, or absence of a workable alternative. That makes a **3 — Major problem** insufficiently supported.
+
+The fact that 2 of 4 reviewers found it independently strengthens confidence that the problem exists, but it does not by itself establish major severity.
+
+## 3. Observation most likely to change the rating
+
+The key observation would be:
+
+**Can representative users who know their bus number but do not know their bus-stop name/code successfully obtain the correct ETA, and how much difficulty does this cause?**
+
+A quick way to collect it would be a short usability test with several regular bus users. Give them a task starting from a known service number but without supplying the stop name/code, and record **task success, time, and whether they need an external source**.
+
+If a substantial proportion cannot complete the task or must leave the app to determine the stop, that would provide evidence for raising the severity to **3**.
+```
+
+### 2. Unable to Bookmark Bus Stop and Bus Service
