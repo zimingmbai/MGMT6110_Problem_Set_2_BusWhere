@@ -438,4 +438,115 @@ If users consistently lose meaningful time, abandon the task, or experience seri
 ---
 
 ### 3. Long Areas List Scrolling
+### Prompt
+```
+ROLE: You are a neutral arbiter between two usability reviewers who rated the same problem differently. You do not know which of them built the product. Do not try to work it out.
 
+## CONTEXT
+
+The product is an AI-augmented web app. It is for regular public bus users to find out their buses arrival timings, as well as how long their bus trip will take.
+
+Both reviewers inspected it against Nielsen's ten usability heuristics and rated the problem on this severity scale:
+
+- **0** — I don't agree that this is a usability problem at all.
+- **1** — Cosmetic problem only. Need not be fixed unless extra time is available.
+- **2** — Minor usability problem. Fixing this should be given low priority.
+- **3** — Major usability problem. Important to fix, so should be given high priority.
+- **4** — Usability catastrophe. Imperative to fix before the product can be released.
+
+A rating rests on four factors:
+
+- how often the problem happens
+- what it costs when it does
+- whether the person can learn around it
+- whether it damages the product's standing out of proportion
+
+## REVIEWER A
+
+**Where:**  
+https://mgmt-6110-problem-set-2-bus-where-5.vercel.app/ — Homepage
+
+**What I did, what I saw:**
+
+- The Homepage has a list of area categories.
+- This is not exactly helpful, as after selecting the areas, they would still need to scroll through multiple bus stops.
+- It can be quite a long list.
+- Separately, after selecting an area, typing in the search bar overwrites this decision (i.e. the bus stop list follows the search bar, instead of searching within the area selected).
+
+**Which heuristic:**  
+1 — Visibility of System Status
+
+**Screen or system:**  
+Screen
+
+**Severity, and why:**  
+3
+
+- The app is usable, but is less intuitive.
+- A user should be guided on how to use the app (e.g. what is the first step, after which the flow is self-explanatory).
+- Currently, it could seem like there are multiple entry points, and the user is confused on which should they use.
+
+**The repair:**  
+The list of Areas can be removed. User can use search bar, or filters, to narrow down the list of bus stops directly.
+
+## REVIEWER B
+
+**Where:**  
+Home screen, the "Singapore Areas" list below the search box (89 areas, from Aljunied / Geylang East to Yishun)
+
+**What I did, what I saw:**  
+The first thing I saw was the Areas list, which looked clean: each row shows the area name, a code prefix and the number of stops. But when I scrolled to find my area, the list kept going through all 89 areas in one long alphabetical column, from Aljunied / Geylang East down to Yishun. There was no A–Z index, no grouping by region (North, East, Central), and no filter within the list, so I had to scroll and read every name. Some areas are split in ways I wouldn't guess, such as "Bedok / Chai Chee" and "Bedok South / Upper Changi," so I couldn't be sure I'd picked the right one without opening both.
+
+**Which heuristic:**  
+8 — Aesthetic and Minimalist Design
+
+**Screen or system:**  
+Screen. It can fix this on its own with what it already has: the 89 areas and their stop counts are already loaded, so the screen can group them by region, add an A–Z jump index, let the search box filter the list as the user types, and show nearby or recently used areas first. No new data is needed.
+
+**Severity, and why:**  
+2 (minor). Users can still search; it's just sometimes an ambiguity problem.
+
+**The repair:**  
+A user can reach their area in a few taps without long scrolling. The list is grouped by region or indexed A–Z, filters as the user types, and shows nearby or recent areas at the top. The feedback section can be reached without scrolling past every area.
+
+## EVIDENCE NEITHER REVIEWER CONTROLS
+
+- Reviewers who raised this problem independently, counting A and B: **4 out of 4 reviewers**
+- Severities that reviewers other than A and B gave this problem: **1 and 3**
+
+## GOAL
+
+Judge the evidence, not the reviewers.
+
+1. Say whether A and B describe the same problem. If they do not, say so and stop.
+2. For each of the four factors, say what the evidence shows and what it cannot show.
+3. Give the severity the evidence supports, and name the factor that decided it.
+4. Name the one observation that would change your rating, and say how it could be collected quickly.
+
+## GUARDRAILS
+
+- Do not split the difference between A and B unless the evidence puts the rating there.
+- If the evidence is too thin to decide, say so plainly instead of inventing a reason.
+- Do not ask which reviewer built the product.
+```
+
+### Response
+```
+No. **A and B do not describe the same usability problem closely enough to arbitrate them as one finding.**
+
+Reviewer B identifies a specific problem: **the 89-item "Singapore Areas" list is cumbersome to navigate because it is long, insufficiently structured, and sometimes ambiguously named.**
+
+Reviewer A mentions that same long-list issue, but their severity-3 finding materially includes a second interaction problem: **selecting an area and then using search overrides the area selection**, creating competing entry points and uncertainty about the intended workflow. That search/filter-state behaviour is not part of B's finding.
+
+Because A's rating is based partly on a problem B is not rating, comparing **A = 3** against **B = 2** would not be a valid severity arbitration. The independent severities of **1 and 3** cannot resolve this either, because it is unclear which formulation those reviewers evaluated.
+
+The findings should first be separated into at least:
+
+1. **Long/unstructured area list** — the issue B describes and A partially describes.
+2. **Area selection conflicts with search / unclear interaction flow** — the additional issue in A.
+
+Per the instruction to stop if the reviewers are not describing the same problem, the arbitration should stop here rather than manufacture a shared severity.
+```
+
+### 4. Unexplained Code/Area Prefix
+### Prompt
