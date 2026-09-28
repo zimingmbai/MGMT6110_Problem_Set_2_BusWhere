@@ -33,6 +33,7 @@ predictions.md committed at 25 Sep 2026, 21:51; first comment for this set on my
 - Expected Finding 6: Unable to Save Bus Stops or Services > HELD (Me 3, YiMing 1, Keziah 2)
 - The heuristic I named as my product's worst: 1. Visibility of System Status > BROKE
   - The Worse Finding is under Heuristic 8 (Aesthetic and Minimalist Design), due to the Long List of Areas for scrolling
+  - This was mentioned by every member in the team
 - The finding that would show my evaluation was wrong: NOT RAISED
   - There were no findings that displayed concerns about the design being overly minimalist.
 
