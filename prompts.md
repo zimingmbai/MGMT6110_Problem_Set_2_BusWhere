@@ -643,3 +643,357 @@ This could be collected quickly with a small usability test: give roughly **5 us
 
 If that behaviour occurs consistently, there would be evidence for raising the issue to **severity 2**.
 ```
+
+### Found by them, missed by me
+
+### 1. Bus Service Not Available. But Trip Duration Still Visible
+### Prompt
+```
+ROLE: You are a neutral arbiter between two usability reviewers who rated the same problem differently. You do not know which of them built the product. Do not try to work it out.
+
+CONTEXT: The product is an AI-augmented web app. It is for regular public bus users to find out their buses arrival timings, as well as how long their bus trip will take.
+
+Both reviewers inspected it against Nielsen's ten usability heuristics and rated the problem on this severity scale:
+
+- 0 I don't agree that this is a usability problem at all.
+- 1 Cosmetic problem only. Need not be fixed unless extra time is available.
+- 2 Minor usability problem. Fixing this should be given low priority.
+- 3 Major usability problem. Important to fix, so should be given high priority.
+- 4 Usability catastrophe. Imperative to fix before the product can be released.
+
+A rating rests on four factors:
+
+- how often the problem happens
+- what it costs when it does
+- whether the person can learn around it
+- whether it damages the product's standing out of proportion
+
+REVIEWER A:
+
+- Where: https://mgmt-6110-problem-set-2-bus-where-5.vercel.app/, on the section showing the route for selected bus service (right screen).
+- What I did, what I saw: I selected bus 89A that does not run on weekend.
+- Which heuristic: 4, Consistency and Standards
+- Screen or system: Screen. There is a message below the boarding stop that tell user no buses are running on the selected service right now, but it still tells the user estimated bus arrival, ride length and estimated time to destination at the bottom.
+- Severity, and why: 3, two results provide conflicting message to user.
+- The repair: Provide no estimation for the selected bus service when it is not in service.
+
+REVIEWER B:
+
+- Where: At the screen to check the bus ETA and trip duration
+- What I did, what I saw: If a bus does not have service currently, there is still an ETA and trip duration
+- Which heuristic: 4 - Consistency and Standards
+- Screen or system: Screen. The data is clear, but it is not presented clearly to the user
+- Severity, and why: 3
+  - A user can be reasonably confused when they check the bus timings.
+- The repair: If there are no available services upcoming, say so and do not populate numbers like ETA
+
+EVIDENCE NEITHER REVIEWER CONTROLS:
+
+- Reviewers who raised this problem independently, counting A and B: 1 out of 3 Reviewers
+- Severities that reviewers other than A and B gave this problem: NONE
+
+GOAL: Judge the evidence, not the reviewers.
+
+1. Say whether A and B describe the same problem. If they do not, say so and stop.
+2. For each of the four factors, say what the evidence shows and what it cannot show.
+3. Give the severity the evidence supports, and name the factor that decided it.
+4. Name the one observation that would change your rating, and say how it could be collected quickly.
+
+GUARDRAILS: Do not split the difference between A and B unless the evidence puts the rating there. If the evidence is too thin to decide, say so plainly instead of inventing a reason. Do not ask which reviewer built the product.
+```
+
+### Response
+```
+Yes. **A and B describe the same usability problem**: when a selected bus service is not currently operating, the interface simultaneously says there are no buses running and still displays ETA/trip estimates.
+
+| Severity factor | What the evidence shows | What it cannot show |
+|---|---|---|
+| **How often it happens** | The condition exists at least for a service such as 89A when it is outside its operating period. Only **1 of 3 reviewers independently raised it**. | This does not tell us how frequently actual users select unavailable services, or whether the contradiction occurs for every unavailable service. |
+| **What it costs when it happens** | The contradiction concerns the product's core task: deciding when a bus will arrive and how long the journey will take. The displayed ETA can reasonably be interpreted as an upcoming bus even though none is operating. | There is no observed evidence that a user actually waited for a nonexistent bus, missed another service, or otherwise suffered a significant consequence. |
+| **Whether users can learn around it** | A "no buses are running" message is present, so the correct information is available on the screen. | We do not know whether users notice that message, which of the conflicting outputs they trust, or whether repeated use teaches them to ignore the ETA. |
+| **Whether it disproportionately damages the product's standing** | Contradictory information about bus availability could undermine confidence in the reliability of the ETA feature. | There is no evidence about users' subsequent trust in the app, abandonment, or perceptions of the product overall. |
+
+### Severity supported: **3 — Major usability problem**
+
+The deciding factor is **the cost when it happens**.
+
+This is not merely unclear formatting. The screen presents an apparently actionable ETA for a bus that the same screen says is not operating. Because arrival timing is one of the application's principal purposes, that contradiction can directly lead to an incorrect travel decision. That makes it important enough to fix with high priority.
+
+The evidence does **not** support severity 4: there is no indication that the product becomes broadly unusable, that recovery is impossible, or that release should be blocked by this issue alone.
+
+### Observation most likely to change the rating
+
+Observe **whether users treat the displayed ETA as a real upcoming bus after seeing this screen**.
+
+A quick test would be to give several users the out-of-service 89A scenario and ask:
+
+> "Based on this screen, what would you do next?"
+
+Do not point out the contradiction. If users consistently recognize that no bus is coming and disregard the ETA, I would lower the rating to **2**. If users interpret the ETA as meaning a bus will arrive and choose to wait, the **3** rating is strongly confirmed.
+```
+
+### 2. Confusion between Bus Stop Code and Postal Code
+### Prompt
+```
+ROLE: You are a neutral arbiter between two usability reviewers who rated the same problem differently. You do not know which of them built the product. Do not try to work it out.
+
+CONTEXT: The product is an AI-augmented web app. It is for regular public bus users to find out their buses arrival timings, as well as how long their bus trip will take.
+
+Both reviewers inspected it against Nielsen's ten usability heuristics and rated the problem on this severity scale:
+
+- 0 I don't agree that this is a usability problem at all.
+- 1 Cosmetic problem only. Need not be fixed unless extra time is available.
+- 2 Minor usability problem. Fixing this should be given low priority.
+- 3 Major usability problem. Important to fix, so should be given high priority.
+- 4 Usability catastrophe. Imperative to fix before the product can be released.
+
+A rating rests on four factors:
+
+- how often the problem happens
+- what it costs when it does
+- whether the person can learn around it
+- whether it damages the product's standing out of proportion
+
+REVIEWER A:
+
+- Where: https://mgmt-6110-problem-set-2-bus-where-5.vercel.app/, search box at the top.
+- What I did, what I saw: I typed 188065 (the postal code for SMU) and pressed search. I only worked out by inferring that the box needs a bus stop code, not a postal code.
+- Which heuristic: 9, Help Users Recognize, Diagnose, and Recover from Errors.
+- Screen or system: Screen. The page already knows the search returned zero results and that I typed 6 digits, which is enough to show a helpful message.
+- Severity, and why: 2, driven by how often it happens. In Singapore "code" usually means postal code, so many first-time visitors will try one and hit a blank screen with no way forward. It could take a big long for those who are new to Singapore.
+- The repair: When a search finds nothing, the screen suggests e.g. "No match. Bus stop codes have 5 digits, e.g. 01012. You might have input six-digit post code. You can also search by road name." Or a visitor can search by bus number and pick up one she knows is close to her.
+
+REVIEWER B:
+
+- Where: When using the search box
+- What I did, what I saw: It does not indicate what is the code to input, the number of digits or characters accepted
+- Which heuristic: 5 - Error Prevention
+- Screen or system: Screen. The data is present, but users must be guided to perform the correct action
+- Severity, and why: 2
+  - A user can use other search methods to obtain the ETA, but they will face an unhappy path when doing the above.
+- The repair: Be clear on what are the accepted values.
+
+EVIDENCE NEITHER REVIEWER CONTROLS:
+
+- Reviewers who raised this problem independently, counting A and B: 1 out of 3 Reviewers
+- Severities that reviewers other than A and B gave this problem: NONE
+
+GOAL: Judge the evidence, not the reviewers.
+
+1. Say whether A and B describe the same problem. If they do not, say so and stop.
+2. For each of the four factors, say what the evidence shows and what it cannot show.
+3. Give the severity the evidence supports, and name the factor that decided it.
+4. Name the one observation that would change your rating, and say how it could be collected quickly.
+
+GUARDRAILS: Do not split the difference between A and B unless the evidence puts the rating there. If the evidence is too thin to decide, say so plainly instead of inventing a reason. Do not ask which reviewer built the product.
+```
+
+### Response
+```
+## 1. Are A and B describing the same problem?
+
+**Yes.**
+
+They describe the same underlying usability problem: **the search field does not make clear what kind of “code” it accepts, so a user can reasonably enter a six-digit postal code and reach an unsuccessful search without adequate guidance.**
+
+The heuristic labels differ because they focus on different points in the same failure path:
+
+- **B — Error Prevention:** the interface should clarify acceptable input before the user searches.
+- **A — Error Recovery:** after the invalid search occurs, the interface should explain what went wrong and how to recover.
+
+That difference does not make them separate problems.
+
+## 2. The four severity factors
+
+| Factor | What the evidence shows | What it cannot show |
+|---|---|---|
+| **How often it happens** | At least one reviewer encountered the ambiguity. Only **1 of 3 reviewers independently raised the problem**, so there is limited evidence that it is frequent. | There is no user-testing evidence showing how many actual bus users would interpret “code” as postal code or otherwise enter an unsupported value. A's statement that many first-time users will do so is plausible, but not demonstrated by the supplied evidence. |
+| **What it costs when it happens** | The user can get zero results and receive insufficient information about why. This creates confusion and delays the task. B also reports that other search methods can still be used. | There is no evidence of the typical time lost, whether users abandon the task, or whether they ultimately fail to obtain an ETA. |
+| **Whether the person can learn around it** | The evidence points toward the problem being **recoverable**. A was able to infer that a bus-stop code was required, and B identifies alternative search methods. | We do not know whether ordinary first-time users would make the same inference, how long recovery takes, or whether they would remember the requirement next time. |
+| **Whether it damages the product's standing disproportionately** | Nothing supplied indicates disproportionate reputational damage. | There is no evidence about trust, perceived AI reliability, user satisfaction, or whether users interpret the failed search as the product itself being unreliable. |
+
+## 3. Supported severity
+
+**Severity: 2 — Minor usability problem.**
+
+The deciding factor is **learnability/recoverability**.
+
+The problem is more than cosmetic: it can put a user onto an unsuccessful path and gives insufficient guidance about what went wrong. That supports at least a 2 rather than a 1.
+
+However, the available evidence indicates that users **can potentially recover or use another search route**, and there is no evidence of repeated task failure, abandonment, serious consequences, or an inability to proceed. That does not support a 3 on the evidence currently available.
+
+The **1-of-3 reviewer incidence should not be treated as proof that the problem is rare among users**; three heuristic reviewers are too small and unlike actual usage data to establish frequency.
+
+## 4. Observation that could change the rating
+
+The most useful observation would be:
+
+**Can first-time users who encounter this exact zero-result state recover without assistance?**
+
+A quick test could give several first-time users a realistic task such as finding the arrival time for a bus near a known Singapore postal code. For anyone who enters the six-digit postal code, observe whether they can identify the problem and successfully continue **without prompting**.
+
+If users who reach this state commonly become stuck, abandon the task, or require assistance, that would provide evidence for increasing the severity to **3**. If they consistently understand and recover almost immediately, the case for **2** would weaken.
+```
+
+### 3. Different Search Results in Area Category vs Search Bar
+### Prompt
+```
+ROLE: You are a neutral arbiter between two usability reviewers who rated the same problem differently. You do not know which of them built the product. Do not try to work it out.
+
+CONTEXT: The product is an AI-augmented web app. It is for regular public bus users to find out their buses arrival timings, as well as how long their bus trip will take.
+
+Both reviewers inspected it against Nielsen's ten usability heuristics and rated the problem on this severity scale:
+
+- 0 I don't agree that this is a usability problem at all.
+- 1 Cosmetic problem only. Need not be fixed unless extra time is available.
+- 2 Minor usability problem. Fixing this should be given low priority.
+- 3 Major usability problem. Important to fix, so should be given high priority.
+- 4 Usability catastrophe. Imperative to fix before the product can be released.
+
+A rating rests on four factors:
+
+- how often the problem happens
+- what it costs when it does
+- whether the person can learn around it
+- whether it damages the product's standing out of proportion
+
+REVIEWER A:
+
+- Where: https://mgmt-6110-problem-set-2-bus-where-5.vercel.app/ the home page area list and the search results page.
+- What I did, what I saw: On the home page, Balestier / Novena shows 51 stops. When I searched "balestier", the app said "16 stops found", but the list below it seemed to show more than 16 stops. It appears each of these goes by different definition of “Balestier”
+- Which heuristic: 4, Consistency and Standards.
+- Screen or system: [see screenshot]
+- Severity, and why: 2, driven by the damage to the product's standing. When the numbers don't match, I stop trusting the other numbers in the app, including the arrival times.
+- The repair: The same area shows the same stop count everywhere, and the "stops found" number matches the list shown. If the area and the search count different things, the screen says what each one counts.
+
+REVIEWER B:
+
+- Where: the search results
+- What I did, what I saw: Typing Balester in the search bar shows matching road names or bus stop names, however the Balester in Area categories refer to potentially URA planning areas, which could have a wider range of bus stop results
+- Which heuristic: 4 - Consistency and Standards
+- Screen or system: Screen. The data is present, the filtering is based on differing criterias
+- Severity, and why: 2
+  - The app is usable, but it does not explain the criteria of the search function
+- The repair: Have clear documentation and indicators on the various search options and their mechanics
+
+EVIDENCE NEITHER REVIEWER CONTROLS:
+
+- Reviewers who raised this problem independently, counting A and B: 1 out of 3 Reviewers
+- Severities that reviewers other than A and B gave this problem: NONE
+
+GOAL: Judge the evidence, not the reviewers.
+
+1. Say whether A and B describe the same problem. If they do not, say so and stop.
+2. For each of the four factors, say what the evidence shows and what it cannot show.
+3. Give the severity the evidence supports, and name the factor that decided it.
+4. Name the one observation that would change your rating, and say how it could be collected quickly.
+
+GUARDRAILS: Do not split the difference between A and B unless the evidence puts the rating there. If the evidence is too thin to decide, say so plainly instead of inventing a reason. Do not ask which reviewer built the product.
+```
+
+### Response
+```
+Yes. **A and B are describing the same underlying problem**: the app appears to use different scopes or definitions for “Balestier” in the area category and in search results, without making that distinction clear. A emphasizes the resulting count inconsistency; B emphasizes the unexplained filtering criteria.
+
+| Factor | What the evidence shows | What it cannot show |
+|---|---|---|
+| **How often it happens** | It occurred for the Balestier case. The independent-review evidence says only **1 of 3 reviewers** raised it. | Whether this happens for many area/search terms, or only Balestier. There is no systematic test across other areas. |
+| **What it costs when it happens** | It can cause confusion about what the counts represent and whether the displayed results are complete. | There is no evidence that users fail to find a bus, receive incorrect arrival times, choose the wrong route, or cannot complete their task. |
+| **Whether the person can learn around it** | The app remains usable: users can inspect search results and use area categories separately. The distinction could potentially be learned through repeated use. | There is no evidence from actual users showing whether they understand the distinction, how quickly they learn it, or whether they continue making mistakes. |
+| **Whether it damages the product's standing disproportionately** | Contradictory-looking counts can plausibly reduce confidence in the interface, particularly because this is an information service. | The evidence does not establish that users generalise that doubt to arrival-time accuracy. A's statement that they would stop trusting other numbers is one reviewer's reaction, not evidence of a broader effect. |
+
+### Severity supported: **2 — Minor usability problem**
+
+The deciding factor is **cost when it happens**. The evidence establishes ambiguity and apparent inconsistency, but not task failure or materially wrong transport decisions. That supports fixing it, but does not support severity 3 on the available evidence.
+
+The **1-of-3 occurrence evidence** reinforces that conclusion, but is too small a sample to establish that the issue is rare.
+
+### One observation that would change the rating
+
+Determine whether **“16 stops found” literally disagrees with the number of stops that the search results actually contain**, rather than merely differing from the broader area-category count.
+
+This can be checked quickly: search **“Balestier”**, record the reported result count, and count the unique bus-stop results actually displayed (including any results revealed by scrolling/pagination).
+
+- If the interface says **16** while actually presenting materially more than 16 qualifying results, that is a genuine internal contradiction rather than merely unexplained search scope. I would reconsider it toward **severity 3**, because users cannot reliably interpret the system's own result state.
+- If the **16 exactly matches the search results**, while the area's **51** refers to a different geographic grouping, the evidence remains consistent with **severity 2**: principally a labeling/explanation problem.
+```
+
+### 4. Unable to Translate Postal Code into Nearby Bus Stops
+### Prompt
+```
+ROLE: You are a neutral arbiter between two usability reviewers who rated the same problem differently. You do not know which of them built the product. Do not try to work it out.
+
+CONTEXT: The product is an AI-augmented web app. It is for regular public bus users to find out their buses arrival timings, as well as how long their bus trip will take.
+
+Both reviewers inspected it against Nielsen's ten usability heuristics and rated the problem on this severity scale:
+
+- 0 I don't agree that this is a usability problem at all.
+- 1 Cosmetic problem only. Need not be fixed unless extra time is available.
+- 2 Minor usability problem. Fixing this should be given low priority.
+- 3 Major usability problem. Important to fix, so should be given high priority.
+- 4 Usability catastrophe. Imperative to fix before the product can be released.
+
+A rating rests on four factors:
+
+- how often the problem happens
+- what it costs when it does
+- whether the person can learn around it
+- whether it damages the product's standing out of proportion
+
+REVIEWER A:
+
+- Where: https://mgmt-6110-problem-set-2-bus-where-5.vercel.app/ homepage search
+- What I did, what I saw: When I imagine I'm not standing at the stop, I don't know its code or the exact road name. I have to open Google Maps first to find it, and only then could I use this app.
+- Which heuristic: 7, Flexibility and Efficiency of Use.
+- Screen or system: System. The page cannot turn a postal code or my location into nearby stops by itself, so it would need a lookup such as OneMap in the back end.
+- Severity, and why: 3, driven by to whom it happens. Anyone planning a fixed route daily close to the start point doesn’t experience this issue. But if someone isn’t familiar with the start area, he has to open another app first.
+- The repair: A visitor can find a stop without knowing its code, e.g. by postal code, by current location, or from saved favourite stops. Or a visitor can search by bus number and pick up one she knows is close to her.
+
+REVIEWER B:
+
+- Where: the search results
+- What I did, what I saw: The app requires some knowledge of the public bus service in SG (e.g. bus stops, roads or bus service numbers). if i don't know about this (e.g. a tourist), then i would have difficulty navigating.
+- Which heuristic: 7 - Flexibility of Use
+- Screen or system: System. I might need to correlate my location, e.g. postal code, to the nearby bus stops available
+- Severity, and why: 3
+  - This can expand my use case to a new segment of users
+- The repair: Being able to search nearby bus stops by postal code
+
+EVIDENCE NEITHER REVIEWER CONTROLS:
+
+- Reviewers who raised this problem independently, counting A and B: 1 out of 3 Reviewers
+- Severities that reviewers other than A and B gave this problem: NONE
+
+GOAL: Judge the evidence, not the reviewers.
+
+1. Say whether A and B describe the same problem. If they do not, say so and stop.
+2. For each of the four factors, say what the evidence shows and what it cannot show.
+3. Give the severity the evidence supports, and name the factor that decided it.
+4. Name the one observation that would change your rating, and say how it could be collected quickly.
+
+GUARDRAILS: Do not split the difference between A and B unless the evidence puts the rating there. If the evidence is too thin to decide, say so plainly instead of inventing a reason. Do not ask which reviewer built the product.
+```
+
+### Response
+```
+Yes. **A and B describe the same underlying usability problem**: users who do not already know a relevant bus stop, road, or service cannot easily translate their current/intended location into a usable starting point within the app. Both propose essentially the same repair: location/postal-code-based discovery of nearby stops.
+
+| Factor | What the evidence shows | What it cannot show |
+|---|---|---|
+| **How often it happens** | The problem occurs mainly when users are **unfamiliar with the starting area or its bus stops**. The independent-review evidence is weak: only **1 of 3 reviewers** surfaced the problem independently. | It does not tell us how often real users are unfamiliar with their starting area, or what proportion of searches fail because of this. Reviewer incidence is not the same as user incidence. |
+| **What it costs when it happens** | The user may need to leave the app, use something such as Google Maps to identify a stop, then return. That introduces extra effort and could interrupt the task. | There is no evidence that users become completely unable to complete the task, make serious errors, or abandon it. The actual time/effort penalty has not been measured. |
+| **Whether the person can learn around it** | There is a clear workaround: find the stop externally, learn the road/stop code, or rely on familiar stops/routes. Regular users may avoid the problem entirely for habitual journeys. | We do not know how readily first-time users discover that workaround or whether they are willing to tolerate it. |
+| **Whether it damages the product's standing disproportionately** | It may make the app seem less useful for unfamiliar journeys or unfamiliar users. | There is **no evidence** of disproportionate reputational or trust damage. Neither reviewer reports users rejecting the product because of it. |
+
+### Supported severity: **2 — Minor usability problem**
+
+The deciding factor is **learnability/workaround**. The problem creates real friction, but the available evidence shows a recoverable extra step rather than a blockage of the core task. The evidence for frequency is also too thin to justify elevating it to a major problem solely because tourists or unfamiliar users could encounter it.
+
+The reviewers' proposed **3** could be justified if this obstacle frequently prevents a meaningful proportion of intended users from starting their journey search, but the supplied evidence does not establish that.
+
+### One observation that would change the rating
+
+Observe **whether users who do not know their nearby bus stop can successfully begin a journey search without leaving the app**.
+
+A quick test would be to give 5–8 participants an unfamiliar starting location such as a postal code or landmark and ask them to find the next suitable bus using only this app. Record whether they succeed, leave the app, or abandon the task. If a substantial proportion cannot proceed or must leave the app, that would support raising the severity to **3**.
+```
