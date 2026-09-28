@@ -660,37 +660,7 @@ export const FindMyStop: React.FC<FindMyStopProps> = ({
                 </div>
               )}
 
-              {/* Popular Transit Hubs Quick Search */}
-              <div className="mb-6">
-                <div className="pb-2 mb-3 border-b border-zinc-100 flex items-baseline justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">
-                    Quick Search Hubs
-                  </span>
-                  <span className="text-[11px] font-mono text-zinc-400">Tap to search</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    'Orchard',
-                    'Bugis',
-                    'Marina Bay',
-                    'Tampines',
-                    'Jurong East',
-                    'Bishan',
-                    'Dhoby Ghaut',
-                    'Clementi',
-                    'Woodlands',
-                  ].map((hub) => (
-                    <button
-                      key={hub}
-                      type="button"
-                      onClick={() => onSearchChange(hub)}
-                      className="px-3.5 py-1.5 bg-zinc-100 hover:bg-zinc-900 hover:text-white text-zinc-800 text-xs font-medium border border-zinc-200 transition-colors"
-                    >
-                      {hub}
-                    </button>
-                  ))}
-                </div>
-              </div>
+
 
               {/* Omnibox Search Tips */}
               <div className="p-4 bg-zinc-50 border border-zinc-200 text-xs text-zinc-600 mb-6">
