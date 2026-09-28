@@ -644,6 +644,7 @@ This could be collected quickly with a small usability test: give roughly **5 us
 If that behaviour occurs consistently, there would be evidence for raising the issue to **severity 2**.
 ```
 
+---
 ### Found by them, missed by me
 
 ### 1. Bus Service Not Available. But Trip Duration Still Visible
