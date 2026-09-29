@@ -998,3 +998,300 @@ Observe **whether users who do not know their nearby bus stop can successfully b
 
 A quick test would be to give 5–8 participants an unfamiliar starting location such as a postal code or landmark and ask them to find the next suitable bus using only this app. Record whether they succeed, leave the app, or abandon the task. If a substantial proportion cannot proceed or must leave the app, that would support raising the severity to **3**.
 ```
+
+## Problem Set 4
+
+### Prompt 1 - Repair Data Reliability and Correctness
+```
+ROLE: You are a skeptical senior developer and usability reviewer working in my existing project. Before you write any code, your job is to argue against the repair I propose.
+
+CONTEXT:
+Live address: https://mgmt-6110-problem-set-2-bus-where-5.vercel.app/
+Who the product is for, and what it does for them: The product is for regular public bus users, to know the arrival timings of buses and the duration of their bus trip.
+The finding:
+What I did, what I saw:
+- Typed in the Search Bar > Tapped the Bus Service Number > Looked at the Bus Arrival Timings
+- The Timings does not Auto-Refresh
+- It seems static, which can quickly become outdated as the data refreshes
+Which heuristic: 1 - Visibility of System Status
+Screen or system: System
+Severity, and why: 4/4
+- The function of the app is greatly limited, as the ETA shown can easily be outdated
+- A user is not being warned about this, and would have to encounter an unhappy episode before realising
+- Even if they are aware, they would have to repeatedly tap on the service number to get updated timings
+The repair:
+- Part 1: When checking the bus timings, there is a button that countdown 20 seconds, after which a user can tap on it to refresh the bus arrival timings. Then another 20 seconds countdown will start, following a similar flow.
+- Part 2: Currently the arrival timing might show 0min, we need to be clearer. We need to confirm the LTA data. If the bus has not arrived, it should show "Arriving". This allows the user to know if the bus has arrived or could have left.
+- Part 3: If the selected service is not running currently, the "Boarding" tag should be changed to "No Service" instead. Similarly, the data on estimated bus arrival, ride length and estimated time to destination should be "Not Available". This is to minimise confusion for the users.
+
+The evidence behind it: 2 out of 4 group members shared this
+
+GOAL: Argue against my repair.
+- Does it solve the problem the finding describes, or a problem I already believed I had? Say which, and why.
+- Does the problem belong to the screen or to the system, and does my repair sit in the right half?
+- Name one heuristic this repair could break while it serves the one above, and how.
+- Propose the smallest alternative that would make the same thing true.
+- Tell me exactly what to do on the live address to check that the repair worked.
+
+OUTPUT: Your arguments first, as a numbered list. Then stop. Write no code until I reply with the repair I have chosen.
+
+GUARDRAILS: Do not tell me the repair is good. If you have no strong reason to doubt it, say so plainly instead of inventing one. When I do ask you to build, change only what the repair needs. Do not remove Disqus or the privacy notice, and do not break /api/health.
+```
+### Response 1
+```
+Here is the usability and engineering critique of the proposed repair:
+
+1. Does it solve the problem the finding describes, or a problem you already believed you had?
+It solves a problem you already believed you had, while bundling in unrelated scope.
+The core finding is simple: arrival timings feel static, do not auto-refresh, and go stale without user warning.
+Part 1 does not fix stale timings automatically—instead of solving freshness, it pushes the labor onto the commuter by forcing them to watch a 20-second timer and tap a manual button. Furthermore, a lockout/cooldown button contradicts the finding that having to repeatedly tap is painful.
+Parts 2 and 3 (replacing "0 min" with "Arriving", and handling "No Service" states) are edge-case data formatting issues that you already had in mind. They are reasonable cleanup tasks, but they do not solve the root finding: keeping real-time data synchronized and showing commuters whether the data they are looking at is fresh.
+
+2. Does the problem belong to the screen or to the system, and does your repair sit in the right half?
+The problem belongs to the system (data lifecycle and freshness), but your repair sits almost entirely in the screen.
+Stale data is a temporal system state: cached or fetched timestamps vs. wall-clock time.
+Your proposed repair attempts to solve a background synchronization problem by introducing new UI widgets (a 20-second countdown button, disabled button states, custom badge renamings).
+If a commuter opens their phone while walking to the stop, waiting for a countdown to hit zero before they are allowed to tap "Refresh" is screen friction masking a system lifecycle deficiency.
+
+3. Which heuristic could this repair break while serving Visibility of System Status?
+Heuristic 3: User Control and Freedom.
+A 20-second countdown button that locks out manual refresh removes user autonomy. If a commuter just walked out of an MRT station or an elevator where signal was lost, or if they suspect a bus just passed, forcing them to wait out an arbitrary 20-second cooldown timer prevents them from retrieving urgent information when they need it most.
+
+4. What is the smallest alternative that would make the same thing true?
+Instead of adding a countdown button, countdown state machine, and manual tap flow:
+Background Auto-polling with Timestamp Visibility:
+Set a silent background interval that refetches arrival data every 20 or 30 seconds while the service/stop view is active.
+Display a discrete text indicator right beside the arrival time: "Updated just now" (or "Updated at 1:15 PM", changing to "Updated 1m ago").
+Text normalization in place:
+Map 0 min or < 1 min directly to "Arr" or "Arriving" in the existing rendering function.
+If the arrivals array is empty, render "No Service" in place of the arrival pill, leaving the rest of the layout untouched.
+This completely resolves Heuristic 1 without adding any interactive button, timer lockout, or manual effort.
+
+5. How to check on the live address that the repair worked
+Open https://mgmt-6110-problem-set-2-bus-where-5.vercel.app/.
+In the search box, search for a bus stop (e.g., 10018 or Opp Blk 1).
+Tap on a live bus service (e.g., 14 or 166).
+Observe the Arrival Pill and Timestamp:
+Confirm that any bus due in < 1 min displays "Arriving" rather than 0min.
+Keep the screen open without touching the phone for 30–45 seconds; verify the arrival time ticks down or updates automatically, and the "Updated at..." text updates to reflect the latest poll.
+Search for an inactive service or check outside operating hours (e.g., past 1:00 AM) to verify the service status shows "No Service" instead of broken or zeroed commute estimates.
+```
+
+### Prompt 2 - Repair User Search Journey
+```
+ROLE: You are a skeptical senior developer and usability reviewer working in my existing project. Before you write any code, your job is to argue against the repair I propose.
+
+CONTEXT:
+Live address: https://mgmt-6110-problem-set-2-bus-where-5.vercel.app/
+Who the product is for, and what it does for them: The product is for regular public bus users, to know the arrival timings of buses and the duration of their bus trip.
+The finding:
+What I did, what I saw:
+- The Search functionality can be confusing.
+- There is a long list of Areas, which make scrolling cumbersome
+- The Areas are categorised by Code Prefix, but the Search Bar filters bus stops by Road Name or Bus Stop Name
+= If a user knows the bus to take, they are unable to search by bus services
+- Also, a person is not able to filter by their nearby bus stops
+Which heuristic: 7 - Flexibility and Efficiency of Use
+Screen or system: System
+Severity, and why: 2/4
+- The user discovery journey is disrupted, leading to confusion
+= A user could potentially go through multiple taps to find their info
+The repair:
+- Part 1: Remove the List of Areas
+- Part 2: Replace the Search Bar with a Search Bar that has multiple tabs
+>> Tab 1: Bus Stop Number
+Display Bus Stops by Bus Stop Number
+Restrict to only 5 numeric digits, and have a subtle reminder on this requirement
+>> Tab 2: Road Name
+Match Bus Stops by the Road Name
+Provide a dropdown of suggested Road Names as the user types
+>> Tab 3: Bus Service Number
+Filter by bus services. This is a different entry point vs the bus stop flow
+Provide the list of available bus services as the user types
+It should still show the side bar with the bus route, and tapping on it will show the bus arrival timing for the selected bus stop
+Advise me on the potential of this flow.
+>> Tab 4: Postal Code
+Is there a way or formula, whereby a user can enter their Postal Code, and we find the nearest bus stops for them?
+What would be the requirements to achieve this? And are there other data required.
+The user journey would now primarily start with the Search functionality.
+The evidence behind it: 3 out of 4 group members shared this
+
+GOAL: Argue against my repair.
+- Does it solve the problem the finding describes, or a problem I already believed I had? Say which, and why.
+- Does the problem belong to the screen or to the system, and does my repair sit in the right half?
+= Name one heuristic this repair could break while it serves the one above, and how.
+= Propose the smallest alternative that would make the same thing true.
+= Tell me exactly what to do on the live address to check that the repair worked.
+
+OUTPUT: Your arguments first, as a numbered list. Then stop. Write no code until I reply with the repair I have chosen.
+GUARDRAILS: Do not tell me the repair is good. If you have no strong reason to doubt it, say so plainly instead of inventing one. When I do ask you to build, change only what the repair needs. Do not remove Disqus or the privacy notice, and do not break /api/health.
+```
+### Response 2
+```
+Here is the usability and engineering critique of the proposed repair:
+
+1. Does it solve the problem the finding describes, or a problem you already believed you had?
+It solves a problem you already believed you had by externalizing database schema distinctions onto the user.
+Commuters do not think in database column types ("I want to search by field: road_name vs field: bus_stop_code"). They have a single piece of information in hand—a bus number (65), a stop number (54261), or a street (Orchard)—and want to type it immediately into whatever box is in front of them.
+Forcing users to choose between 4 tabs before they can type introduces artificial interaction friction (a mode-switching tax). If a user is on the "Road Name" tab and pastes a 5-digit stop code or types service 147, the query fails with zero results.
+Regarding Postal Code (Tab 4): Singapore postal codes (6 digits) map to specific buildings via coordinate projection (SVY21 / WGS84). To support this, you would either have to bundle a 30MB+ offline table of Singapore's ~140,000 postal codes or query external APIs (like SLA OneMap API), which introduces latency, API quotas, and network failure points. Commuters standing at or near a bus stop already have GPS on their phones; requiring them to look up and type a 6-digit postal code is far slower than tapping a 1-click location button.
+
+2. Does the problem belong to the screen or to the system, and does your repair sit in the right half?
+The problem belongs to the Screen, but your repair over-engineers the System.
+The system already has all stop codes, stop names, road names, services, and GPS coordinates (latitude, longitude) in memory within /stops.json.
+The problem is purely Screen representation:
+The search predicate in FindMyStop.tsx simply omitted stop.services.includes(query).
+The default landing screen renders an unhelpful list of 100+ LTA 2-digit administrative code prefixes (e.g., "Prefix 01", "Prefix 54") that mean nothing to everyday commuters.
+Splitting one input into 4 tabs overcomplicates the screen to solve a two-line filter omission.
+
+3. Name one heuristic this repair could break while it serves the one above, and how.
+Heuristic 8: Aesthetic and Minimalist Design (and Heuristic 6: Recognition Rather Than Recall).
+On mobile viewports (where 90%+ of bus commuters check arrival times), 4 horizontal tabs consume critical vertical real estate above the fold.
+It forces users to recall which category their search term belongs to, and creates dead-end states when users type across category boundaries without switching tabs first.
+Imposing a rigid 5-digit validation with a reminder rule breaks Heuristic 3: User Control and Freedom and Heuristic 5: Error Prevention; the current search gracefully matches partial numbers as the user types each digit.4. Propose the smallest alternative that would make the same thing true.
+Instead of adding 4 tabs and a postal code lookup service:
+Single Omnibox Search with Service Matching:
+Keep one single search input. Update the client-side filter in FindMyStop.tsx to search stop.services in addition to code, name, and road:
+codeTsconst serviceMatch = stop.services.some(svc => svc.toLowerCase() === trimmedQuery);
+If a user types 65, they immediately see all stops served by bus 65; if they type 54261, they see that stop; if they type Orchard, they see Orchard stops. Zero tab switching.
+Replace the Area Prefix List with a "Near Me" GPS Button:
+Remove the artificial LTA 2-digit Area list. In its place on the default empty-search state:
+Provide a prominent "Find stops near me" button using standard browser GPS (navigator.geolocation.getCurrentPosition).
+Calculate Euclidean/Haversine distance against the existing latitude and longitude fields in stops.json to instantly surface the nearest 5–10 stops sorted by distance (e.g., 120m away).
+If location access is denied or unavailable, show a clean list of recently viewed stops or top transit hubs instead of a massive alphabetical prefix directory.
+
+5. Tell me exactly what to do on the live address to check that the repair worked.
+Test Bus Service Search:
+Tap the search bar and type 65 (or any service number).
+Verify that bus stops serving route 65 appear immediately in the search results without navigating to a special tab.
+Test Stop Code & Road Name in the Same Box:
+Backspace and type 54261 to verify the exact stop appears.
+Backspace and type Bishan to verify road/location results appear.
+Verify Removal of the Area List & Check Nearby Stops:
+Clear the search bar completely.
+Confirm that the long, scrolling 2-digit Area prefix list is gone.
+Tap the "Find stops near me" button, allow browser location permission, and verify that the closest physical stops appear with distance indicators (e.g. 150m).
+```
+### Response 2 Iterations
+```
+### Prompt:
+For Single Omnibox Search with Service Matching, what happens if a user enters 65, and there are services and bus stop numbers that matches or starts/ends with 65?
+
+### Response:
+If you do a naive, unordered text search, a query like 65 creates a collision problem:
+Bus service 65 matches.
+Every bus stop whose 5-digit code starts with or contains 65 (e.g., 65009, 65129, 06519, 16541) matches.
+Every bus stop whose name or street happens to have 65 (e.g., “Blk 65”) matches.
+If all of these are dumped into one unranked list, the user gets an overwhelming list of 80+ stops, where stops served by Bus 65 are indistinguishable from stops whose postal/stop code happens to contain 65.
+How to Disambiguate Without Splitting into 4 Tabs
+In transit search (how apps like Citymapper, Apple Maps, and Google Maps handle this), you solve this with Result Categorization & Tiered Ranking:
+1. Distinguish "Full Service Match" from "Stop Matches"
+In Singapore, bus stop codes are strictly 5 digits (e.g., 65009), while bus service numbers are 1 to 3 digits (plus occasional letter suffixes like 65M).
+When a user enters 65, they have typed an exact bus service number, but only a partial 2-digit stop code.
+2. Group the Results into Two Clear Sections:
+Instead of mixing everything together, the search dropdown/list renders two distinct sections:
+code
+Text
+┌────────────────────────────────────────────────────────┐
+│ Search: 65                                          ✕  │
+└────────────────────────────────────────────────────────┘
+
+  BUS SERVICES
+  ┌────────────────────────────────────────────────────┐
+  │ [65]  Service 65                                   │
+  │       Tampines Int ⇄ HarbourFront Int              │
+  └────────────────────────────────────────────────────┘
+
+  BUS STOPS (Matching code or name)
+  ┌────────────────────────────────────────────────────┐
+  │ 65009  Opp Blk 125                                 │
+  │        Tampines Ave 1 • Services: 8, 15, 23, 65... │
+  ├────────────────────────────────────────────────────┤
+  │ 65129  Blk 126                                     │
+  │        Tampines Ave 1 • Services: 8, 15, 23, 65... │
+  └────────────────────────────────────────────────────┘
+3. How the User Journey Works for Each Case:
+If the user taps the Service card ([65] Service 65):
+It immediately opens the Ride Panel route view for Service 65, showing its full origin-to-destination stop sequence. (This achieves the exact goal you asked about in Tab 3: "filter by bus services, show the sidebar with the route").
+If the user taps a Bus Stop (65009):
+It expands or focuses on that specific stop, highlighting the [65] service chip.
+If the user finishes typing a 5-digit code (65009):
+The Service section disappears (since no service is named 65009), and the exact stop 65009 immediately jumps to the top as the sole exact match.
+Why this is superior to tabs:
+Zero mode-switching: The user never has to think "Wait, is this the Stop Number tab or the Service Number tab?"
+Immediate recognition: Both matching services and matching stops are visible in one glance.
+Natural drilldown: Typing 2 digits presents the route; typing 5 digits pinpoints the stop.
+
+### Prompt:
+Remove the Quick Search Hubs
+This is not helpful, as tapping on it leads to a long list of bus stops that are not targeted for the user.
+Tell me if you think otherwise.
+
+### Response:
+I agree with your decision to remove the Quick Search Hubs.
+Why removing it is the right move:
+Low Intent & Poor Targeting: Hub tags like "Orchard" or "Jurong East" match dozens of physically dispersed stops across major corridors. Tapping them resulted in an unranked, unwieldy list of stops with zero proximity context.
+Clearer User Funnels: Commuters have two genuine entry points:
+High specificity: Knowing the bus service (e.g. 65), 5-digit bus stop code, or road name via the Single Omnibox.
+Immediate physical context: Tapping "Use Current Location" (GPS) to find walking-distance stops sorted by distance.
+Reduced Cognitive Load (Heuristic 8: Aesthetic and Minimalist Design): Eliminating the hub chips removes visual noise and prevents users from falling into an unproductive tap trap.
+Summary of Change:
+Removed the Quick Search Hubs chip grid from the home screen (FindMyStop.tsx).
+The home view now cleanly highlights GPS Near Me discovery and the concise guide for the Single Omnibox search.
+Verified build and /api/health intact.
+
+### Prompt:
+Can we review these:
+- When using the entry point via a Bus Service Number, the user should be able to choose both the Boarding stop as well as the Destination stop
+- This is because this entry point does not know what's the user Boarding stop
+= Also, when searching for Bus Service 851, there is a subtext that mentions "107 stops on route". Can you check if this is accurate?
+
+GOAL: Argue against my repair.
+- Does it solve the problem the finding describes, or a problem I already believed I had? Say which, and why.
+- Name one heuristic this repair could break while it serves the one above, and how.
+- Propose the smallest alternative that would make the same thing true.
+
+OUTPUT: Your arguments first, as a numbered list. Then stop. Write no code until I reply with the repair I have chosen.
+
+GUARDRAILS: Do not tell me the repair is good. If you have no strong reason to doubt it, say so plainly instead of inventing one. When I do ask you to build, change only what the repair needs. Do not remove Disqus or the privacy notice, and do not break /api/health.
+
+### Response:
+Here is the usability review and critique of the proposed repair, followed by the verification of Bus Service 851's route data:
+
+1. Verification of Bus Service 851 ("107 stops on route")
+The 107 figure is technically real data, but semantically inaccurate and misleading to a commuter.
+The exact breakdown:
+Direction 1 (Yishun Temp Int > Bukit Merah Int): 57 stops
+Direction 2 (Bukit Merah Int > Yishun Temp Int): 52 stops
+Total stop visits =. Because both directions terminate at the same two physical interchange poles (Yishun Int 59009 and Bukit Merah Int 10009), there are 107 unique physical bus stop codes in stops.json.
+The flaw: The current code counted unique physical stops across both opposing directions combined. A passenger riding Bus 851 never experiences a 107-stop journey; they experience a 57-stop trip southbound or a 52-stop trip northbound. Conflating both directions into a single sum creates confusion.
+
+2. Does it solve the problem the finding describes, or a problem you already believed you had?
+It solves a problem you already believed you had (turning the app into a 2-point A-to-B route planner), not the problem the finding describes.
+Why:
+The original finding was: "If a user knows the bus to take, they are unable to search by bus services."
+The core user goal in this app is to check bus arrival timings and trip duration.
+When a user searches for a bus service like "851", their immediate question is either "When is it reaching my stop?" or "Does it go toward Bukit Merah or Yishun?"
+The defect in the current build is not that the user is missing a destination picker; the defect is that FindMyStop.tsx used a crude implementation shortcut: it blindly grabbed svc.stops[0].code (a random stop from the raw stops.json array) and locked the panel to it.
+Forcing the user to mandatorily select both boarding and destination stops before showing anything turns a quick arrival check into an onerous multi-step form wizard.
+
+3. Which heuristic does this repair break, and how?
+Heuristic 7: Flexibility and Efficiency of Use (and Heuristic 3: User Control and Freedom):
+High interaction cost & deadlocks: A commuter standing at a bus stop who searches "851" just wants to see when the bus arrives at that stop. Forcing them into a modal or two-step selector to choose a Boarding Stop from a 50+ stop list, followed by a Destination Stop, introduces unnecessary friction for a user who may not even need a destination to see live timings.
+Direction ambiguity: A bus service has two directions. Without first resolving direction, presenting 107 stops in a picker risks the user selecting a destination that belongs to the opposite direction, creating invalid route states or errors.
+
+4. What is the smallest alternative that would make the same thing true?
+Instead of creating a cumbersome two-stop selection form:
+Direction Selector on Service Click:
+When the user taps Bus Service 851, display the two clear terminus directions:
+Towards Bukit Merah Int (57 stops)
+Towards Yishun Temp Int (52 stops)
+Show the direction's actual stop count (57 or 52), eliminating the misleading "107 stops" label.
+Context-Aware Default Boarding Stop:
+If GPS location was already granted, default the boarding stop to whichever stop on that direction is physically closest to the user.
+If no GPS, default to the route's origin terminus (e.g. Stop 1: Yishun Temp Int), allowing the user to browse from start to end.
+Interactive Timeline Selection in RidePanel:
+In the route timeline, every stop is already listed in sequence. Allow the user to tap "Set as Boarding" on any stop in the list, or tap a downstream stop to set the destination.
+This keeps arrival timing immediately visible without blocking the user behind a mandatory two-stop input barrier.
+```
+
