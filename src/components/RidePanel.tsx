@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { X, ArrowLeft, Bus, CheckCircle2 } from 'lucide-react';
 import {
   computeRideMetrics,
@@ -18,9 +18,11 @@ interface RidePanelProps {
   serviceNumber: string;
   boardingStopCode: string;
   destinationStopCode: string | null;
-  onSelectDestination: (stopCode: string) => void;
+  onChangeBoardingStop?: (stopCode: string) => void;
+  onSelectDestination: (stopCode: string | null) => void;
   onClose: () => void;
   stopsMap?: Map<string, BusStop>;
+  userCoordinates?: { latitude: number; longitude: number } | null;
 }
 
 // In-memory cache for /routes.json so it is only fetched once across panel openings
@@ -30,12 +32,17 @@ export const RidePanel: React.FC<RidePanelProps> = ({
   serviceNumber,
   boardingStopCode,
   destinationStopCode,
+  onChangeBoardingStop,
   onSelectDestination,
   onClose,
   stopsMap,
+  userCoordinates,
 }) => {
   const boardingRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Direction state if service has multiple directions
+  const [selectedDirectionId, setSelectedDirectionId] = useState<number | null>(null);
 
   // Route data state (with 4 states: loading, empty, refused, unreachable)
   const [serviceRoute, setServiceRoute] = useState<BusService | null>(null);
@@ -134,10 +141,55 @@ export const RidePanel: React.FC<RidePanelProps> = ({
     };
   }, [serviceNumber]);
 
-  // Derive direction
-  const direction: ServiceDirection | null = serviceRoute
-    ? getServiceDirectionForBoarding(serviceRoute, boardingStopCode)
-    : null;
+  // Derive direction with direction-switching support
+  const direction: ServiceDirection | null = useMemo(() => {
+    if (!serviceRoute || !serviceRoute.directions || serviceRoute.directions.length === 0) return null;
+    if (selectedDirectionId !== null) {
+      const found = serviceRoute.directions.find((d) => d.directionId === selectedDirectionId);
+      if (found) return found;
+    }
+    return getServiceDirectionForBoarding(serviceRoute, boardingStopCode) || serviceRoute.directions[0];
+  }, [serviceRoute, selectedDirectionId, boardingStopCode]);
+
+  const handleSwitchDirection = (targetDir: ServiceDirection) => {
+    setSelectedDirectionId(targetDir.directionId);
+    let bestStopCode = targetDir.stops[0]?.stopCode || '';
+    if (userCoordinates && stopsMap) {
+      let minDist = Infinity;
+      for (const s of targetDir.stops) {
+        const st = stopsMap.get(s.stopCode);
+        if (st && typeof st.lat === 'number' && typeof st.lng === 'number') {
+          const R = 6371;
+          const dLat = ((st.lat - userCoordinates.latitude) * Math.PI) / 180;
+          const dLon = ((st.lng - userCoordinates.longitude) * Math.PI) / 180;
+          const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos((userCoordinates.latitude * Math.PI) / 180) *
+              Math.cos((st.lat * Math.PI) / 180) *
+              Math.sin(dLon / 2) *
+              Math.sin(dLon / 2);
+          const dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          if (dist < minDist) {
+            minDist = dist;
+            bestStopCode = s.stopCode;
+          }
+        }
+      }
+    }
+    onChangeBoardingStop?.(bestStopCode);
+    onSelectDestination(null);
+  };
+
+  const handleSetBoarding = (stopCode: string) => {
+    onChangeBoardingStop?.(stopCode);
+    if (destinationStopCode && direction) {
+      const newBIdx = direction.stops.findIndex((s) => s.stopCode === stopCode);
+      const dIdx = direction.stops.findIndex((s) => s.stopCode === destinationStopCode);
+      if (dIdx <= newBIdx) {
+        onSelectDestination(null);
+      }
+    }
+  };
 
   // Auto-scroll to the boarding stop when panel opens or service changes
   useEffect(() => {
@@ -344,6 +396,37 @@ export const RidePanel: React.FC<RidePanelProps> = ({
         </button>
       </div>
 
+      {/* Direction Switcher if multiple directions exist */}
+      {routeStatus === 'success' && serviceRoute && serviceRoute.directions && serviceRoute.directions.length > 1 && (
+        <div id="direction-switcher" className="px-4 py-2.5 bg-zinc-100 border-b border-zinc-200 flex items-center justify-between gap-2 shrink-0">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 shrink-0">
+            Direction
+          </span>
+          <div className="flex gap-1.5 overflow-x-auto max-w-full">
+            {serviceRoute.directions.map((dir) => {
+              const destStop = dir.stops[dir.stops.length - 1];
+              const destName = stopsMap?.get(destStop.stopCode)?.name || destStop.stopCode;
+              const isActive = direction?.directionId === dir.directionId;
+              return (
+                <button
+                  key={dir.directionId}
+                  type="button"
+                  id={`direction-btn-${dir.directionId}`}
+                  onClick={() => handleSwitchDirection(dir)}
+                  className={`px-2.5 py-1 text-xs font-semibold rounded-none border transition-colors whitespace-nowrap ${
+                    isActive
+                      ? 'bg-zinc-900 text-white border-zinc-900'
+                      : 'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-50 hover:text-zinc-900'
+                  }`}
+                >
+                  To {destName} ({dir.stops.length})
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Route Level Four-State Status Bar when not success */}
       {routeStatus !== 'success' ? (
         <div id="route-state-container" className="flex-1 p-8 text-center flex flex-col items-center justify-center">
@@ -365,7 +448,7 @@ export const RidePanel: React.FC<RidePanelProps> = ({
                 <span className="font-semibold text-zinc-900">
                   {boardingStopDetails?.name || boardingStopCode}
                 </span>
-                <span className="text-zinc-400 ml-1">({boardingStopCode})</span>
+                <span className="text-zinc-400 ml-1 font-mono">({boardingStopCode})</span>
               </div>
 
               <div className="text-right shrink-0">
@@ -385,6 +468,23 @@ export const RidePanel: React.FC<RidePanelProps> = ({
                 )}
               </div>
             </div>
+
+            {destinationStopCode && destinationDetails && (
+              <div className="mt-2 pt-2 border-t border-zinc-200 flex items-center justify-between text-xs">
+                <div className="text-zinc-700">
+                  Alighting at <strong className="text-zinc-900">{destinationDetails.name}</strong>{' '}
+                  <span className="text-zinc-400 font-mono">({destinationStopCode})</span>
+                </div>
+                <button
+                  type="button"
+                  id="clear-destination-btn"
+                  onClick={() => onSelectDestination(null)}
+                  className="text-[11px] font-semibold text-red-600 hover:text-red-800 underline ml-2 shrink-0"
+                >
+                  Clear Destination
+                </button>
+              </div>
+            )}
 
             {boardingInfo.status !== 'success' && (
               <p
@@ -426,7 +526,7 @@ export const RidePanel: React.FC<RidePanelProps> = ({
                     ref={isBoarding ? boardingRef : undefined}
                     id={`stop-node-${routeStop.stopCode}`}
                     className={`relative flex items-start group transition-colors ${
-                      isBeforeBoarding ? 'opacity-35 select-none' : ''
+                      isBeforeBoarding ? 'opacity-75 hover:opacity-100' : ''
                     }`}
                   >
                     {/* Vertical Transit Track */}
@@ -451,7 +551,7 @@ export const RidePanel: React.FC<RidePanelProps> = ({
                             ? 'w-3 h-3 bg-red-600 mt-2'
                             : isAfterBoarding
                             ? 'w-3 h-3 bg-white border-2 border-zinc-400 mt-2 group-hover:border-zinc-900'
-                            : 'w-2.5 h-2.5 bg-zinc-300 mt-2'
+                            : 'w-2.5 h-2.5 bg-zinc-300 mt-2 group-hover:bg-zinc-600'
                         }`}
                       >
                         {isBoarding && <Bus className="w-3 h-3 text-red-600" />}
@@ -464,15 +564,11 @@ export const RidePanel: React.FC<RidePanelProps> = ({
                       onClick={() => {
                         if (isAfterBoarding) {
                           onSelectDestination(routeStop.stopCode);
+                        } else if (isBeforeBoarding) {
+                          handleSetBoarding(routeStop.stopCode);
                         }
                       }}
-                      className={`flex-1 pb-6 pt-0.5 text-left transition-colors ${
-                        isAfterBoarding
-                          ? 'cursor-pointer hover:bg-zinc-50 -ml-2 pl-2 rounded'
-                          : isBoarding
-                          ? 'cursor-default'
-                          : 'cursor-not-allowed'
-                      }`}
+                      className={`flex-1 pb-5 pt-0.5 text-left transition-colors cursor-pointer hover:bg-zinc-50 -ml-2 pl-2 rounded`}
                     >
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -504,8 +600,19 @@ export const RidePanel: React.FC<RidePanelProps> = ({
                             )
                           )}
                           {isDestination && (
-                            <span className="px-2 py-0.5 text-[11px] font-bold bg-zinc-900 text-white uppercase tracking-wider">
-                              Destination
+                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-bold bg-zinc-900 text-white uppercase tracking-wider">
+                              <span>Destination</span>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onSelectDestination(null);
+                                }}
+                                className="text-zinc-400 hover:text-white font-mono text-[10px]"
+                                title="Clear destination"
+                              >
+                                ✕
+                              </button>
                             </span>
                           )}
                         </div>
@@ -557,12 +664,40 @@ export const RidePanel: React.FC<RidePanelProps> = ({
                         <p className="text-xs text-zinc-500 mt-0.5">{stopInfo.road}</p>
                       )}
 
-                      {/* Tap prompt helper for eligible stops */}
-                      {isAfterBoarding && !isDestination && !destinationStopCode && (
-                        <span className="inline-block text-[11px] text-zinc-400 mt-1 hover:text-red-600">
-                          Tap to select as destination
-                        </span>
-                      )}
+                      {/* Interactive Selection Prompts / Buttons */}
+                      <div className="mt-1 flex items-center gap-2">
+                        {isBeforeBoarding && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSetBoarding(routeStop.stopCode);
+                            }}
+                            className="text-[11px] font-semibold text-zinc-700 hover:text-white hover:bg-zinc-900 bg-zinc-100 px-2 py-0.5 border border-zinc-300 transition-colors"
+                          >
+                            Set as Boarding
+                          </button>
+                        )}
+                        {isAfterBoarding && (
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSetBoarding(routeStop.stopCode);
+                              }}
+                              className="text-[11px] font-medium text-zinc-500 hover:text-zinc-900 bg-white hover:bg-zinc-100 px-2 py-0.5 border border-zinc-200 transition-colors"
+                            >
+                              Board Here
+                            </button>
+                            {!isDestination && (
+                              <span className="text-[11px] text-zinc-400 hover:text-red-600">
+                                Tap to set destination
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );

@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { Search, X, Navigation, RotateCw, MapPin, ChevronRight, Bus } from 'lucide-react';
-import { BusStop } from '../types';
+import { BusStop, BusService } from '../types';
+import { fetchRoutesData } from '../services/routesService';
 import { DisqusComments } from './DisqusComments';
 
 interface FindMyStopProps {
@@ -10,6 +11,8 @@ interface FindMyStopProps {
   activeBoardingCode: string | null;
   activeServiceNumber: string | null;
   onStopsLoaded?: (stops: BusStop[]) => void;
+  userCoordinates?: { latitude: number; longitude: number } | null;
+  onCoordinatesChange?: (coords: { latitude: number; longitude: number } | null) => void;
 }
 
 /**
@@ -36,8 +39,11 @@ export const FindMyStop: React.FC<FindMyStopProps> = ({
   activeBoardingCode,
   activeServiceNumber,
   onStopsLoaded,
+  userCoordinates,
+  onCoordinatesChange,
 }) => {
   const [stops, setStops] = useState<BusStop[]>([]);
+  const [routesMap, setRoutesMap] = useState<Record<string, BusService> | null>(null);
   const [fetchStatus, setFetchStatus] = useState<
     'loading' | 'empty' | 'refused' | 'unreachable' | 'success'
   >('loading');
@@ -47,6 +53,36 @@ export const FindMyStop: React.FC<FindMyStopProps> = ({
   const [gpsStatus, setGpsStatus] = useState<'idle' | 'locating' | 'success' | 'error'>('idle');
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [gpsErrorMessage, setGpsErrorMessage] = useState<string | null>(null);
+
+  // Sync userLocation with userCoordinates prop if provided
+  useEffect(() => {
+    if (userCoordinates) {
+      setUserLocation(userCoordinates);
+      setGpsStatus('success');
+    }
+  }, [userCoordinates]);
+
+  // Load /routes.json in background for accurate route direction details
+  useEffect(() => {
+    let isMounted = true;
+    fetchRoutesData().then((data) => {
+      if (isMounted && data) {
+        setRoutesMap(data);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Map stops by code for instant lookup
+  const stopsByCode = useMemo(() => {
+    const map = new Map<string, BusStop>();
+    for (const stop of stops) {
+      map.set(stop.code, stop);
+    }
+    return map;
+  }, [stops]);
 
   // Load /stops.json once on mount
   useEffect(() => {
@@ -115,10 +151,12 @@ export const FindMyStop: React.FC<FindMyStopProps> = ({
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        setUserLocation({
+        const coords = {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
-        });
+        };
+        setUserLocation(coords);
+        onCoordinatesChange?.(coords);
         setGpsStatus('success');
       },
       (error) => {
@@ -139,7 +177,7 @@ export const FindMyStop: React.FC<FindMyStopProps> = ({
         maximumAge: 60000,
       }
     );
-  }, []);
+  }, [onCoordinatesChange]);
 
   const trimmedQuery = searchQuery.trim().toLowerCase();
 
@@ -159,18 +197,51 @@ export const FindMyStop: React.FC<FindMyStopProps> = ({
     return map;
   }, [stops]);
 
-  // Omnibox: Matching bus services when query is typed
+  // Omnibox: Matching bus services when query is typed with accurate per-direction counts
   const matchingServices = useMemo(() => {
     if (!trimmedQuery) return [];
-    const results: Array<{ serviceNumber: string; stopCount: number; stops: BusStop[] }> = [];
+    const results: Array<{
+      serviceNumber: string;
+      directions: Array<{
+        directionId: number;
+        stopCount: number;
+        originStopCode: string;
+        destStopCode: string;
+        destName: string;
+        originName: string;
+        stops: Array<{ stopCode: string; distanceKm?: number }>;
+      }>;
+      fallbackStopCount: number;
+      fallbackStops: BusStop[];
+    }> = [];
 
     for (const [svcNum, svcStops] of serviceToStopsMap.entries()) {
       const lower = svcNum.toLowerCase();
       if (lower === trimmedQuery || lower.startsWith(trimmedQuery)) {
+        const routeData = routesMap ? routesMap[svcNum] : null;
+        const directions = routeData?.directions
+          ? routeData.directions.map((dir) => {
+              const origCode = dir.stops[0]?.stopCode || '';
+              const destCode = dir.stops[dir.stops.length - 1]?.stopCode || '';
+              const origName = stopsByCode.get(origCode)?.name || origCode;
+              const destName = stopsByCode.get(destCode)?.name || destCode;
+              return {
+                directionId: dir.directionId,
+                stopCount: dir.stops.length,
+                originStopCode: origCode,
+                destStopCode: destCode,
+                originName: origName,
+                destName: destName,
+                stops: dir.stops,
+              };
+            })
+          : [];
+
         results.push({
           serviceNumber: svcNum,
-          stopCount: svcStops.length,
-          stops: svcStops,
+          directions,
+          fallbackStopCount: svcStops.length,
+          fallbackStops: svcStops,
         });
       }
     }
@@ -182,7 +253,38 @@ export const FindMyStop: React.FC<FindMyStopProps> = ({
       if (!aExact && bExact) return 1;
       return a.serviceNumber.localeCompare(b.serviceNumber, undefined, { numeric: true });
     });
-  }, [serviceToStopsMap, trimmedQuery]);
+  }, [serviceToStopsMap, trimmedQuery, routesMap, stopsByCode]);
+
+  // Intelligent service selection: selects closest boarding stop if GPS is active, or route terminus
+  const handleSelectServiceWithDirection = useCallback(
+    (serviceNumber: string, dirStops?: Array<{ stopCode: string }>, fallbackCode?: string) => {
+      const coords = userCoordinates || userLocation;
+      if (dirStops && dirStops.length > 0) {
+        if (coords) {
+          let bestCode = dirStops[0].stopCode;
+          let minDist = Infinity;
+          for (const s of dirStops) {
+            const st = stopsByCode.get(s.stopCode);
+            if (st && typeof st.lat === 'number' && typeof st.lng === 'number') {
+              const dist = calculateDistanceKm(coords.latitude, coords.longitude, st.lat, st.lng);
+              if (dist < minDist) {
+                minDist = dist;
+                bestCode = s.stopCode;
+              }
+            }
+          }
+          onSelectService(bestCode, serviceNumber);
+          return;
+        }
+        onSelectService(dirStops[0].stopCode, serviceNumber);
+        return;
+      }
+      if (fallbackCode) {
+        onSelectService(fallbackCode, serviceNumber);
+      }
+    },
+    [userCoordinates, userLocation, stopsByCode, onSelectService]
+  );
 
   // Omnibox: Matching bus stops (by code, name, road, or service served)
   const filteredStops = useMemo(() => {
@@ -463,38 +565,77 @@ export const FindMyStop: React.FC<FindMyStopProps> = ({
                       Bus Services ({matchingServices.length})
                     </h3>
                     <span className="text-[11px] font-mono text-zinc-400">
-                      Tap a service to open route
+                      Choose direction to view route
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {matchingServices.slice(0, 6).map((svc) => (
                       <div
                         key={svc.serviceNumber}
                         id={`service-card-${svc.serviceNumber}`}
-                        onClick={() => {
-                          if (svc.stops.length > 0) {
-                            onSelectService(svc.stops[0].code, svc.serviceNumber);
-                          }
-                        }}
-                        className="p-3.5 bg-zinc-50 hover:bg-zinc-100 active:bg-red-50 border border-zinc-200 hover:border-zinc-400 transition-all cursor-pointer flex items-center justify-between group"
+                        className="p-3.5 bg-zinc-50 border border-zinc-200 hover:border-zinc-400 transition-all flex flex-col justify-between"
                       >
-                        <div className="flex items-center gap-3">
-                          <span className="min-w-[44px] h-9 px-2.5 inline-flex items-center justify-center font-bold text-sm bg-red-600 text-white rounded-none">
-                            {svc.serviceNumber}
-                          </span>
-                          <div>
-                            <p className="font-bold text-sm sm:text-base text-zinc-900 group-hover:text-red-600 transition-colors">
-                              Bus Service {svc.serviceNumber}
-                            </p>
-                            <p className="text-xs text-zinc-500 font-mono">
-                              {svc.stopCount} stops on route
-                            </p>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2.5">
+                            <span className="min-w-[40px] h-8 px-2 inline-flex items-center justify-center font-bold text-sm bg-red-600 text-white rounded-none">
+                              {svc.serviceNumber}
+                            </span>
+                            <div>
+                              <p className="font-bold text-sm text-zinc-900">
+                                Bus Service {svc.serviceNumber}
+                              </p>
+                              <p className="text-[11px] text-zinc-500 font-mono">
+                                {svc.directions.length > 1
+                                  ? `${svc.directions.length} directions`
+                                  : svc.directions.length === 1
+                                  ? `${svc.directions[0].stopCount} stops`
+                                  : `${svc.fallbackStopCount} stops`}
+                              </p>
+                            </div>
                           </div>
                         </div>
-                        <span className="text-xs font-semibold text-zinc-400 group-hover:text-red-600 flex items-center gap-0.5">
-                          View Route &rarr;
-                        </span>
+
+                        {/* Direction routes */}
+                        {svc.directions.length > 0 ? (
+                          <div className="space-y-1.5 pt-2 border-t border-zinc-200">
+                            {svc.directions.map((dir) => (
+                              <button
+                                key={dir.directionId}
+                                type="button"
+                                onClick={() =>
+                                  handleSelectServiceWithDirection(svc.serviceNumber, dir.stops)
+                                }
+                                className="w-full text-left px-3 py-2 bg-white hover:bg-zinc-900 hover:text-white border border-zinc-200 text-xs font-medium transition-colors flex items-center justify-between group"
+                              >
+                                <span className="truncate mr-2">
+                                  Towards{' '}
+                                  <strong className="text-zinc-900 group-hover:text-white">
+                                    {dir.destName}
+                                  </strong>
+                                </span>
+                                <span className="text-[11px] font-mono text-zinc-400 group-hover:text-zinc-300 shrink-0">
+                                  {dir.stopCount} stops &rarr;
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleSelectServiceWithDirection(
+                                svc.serviceNumber,
+                                undefined,
+                                svc.fallbackStops[0]?.code
+                              )
+                            }
+                            className="w-full text-left px-3 py-2 bg-white hover:bg-zinc-900 hover:text-white border border-zinc-200 text-xs font-medium transition-colors flex items-center justify-between"
+                          >
+                            <span>View Route</span>
+                            <span className="text-[11px] font-mono text-zinc-400">&rarr;</span>
+                          </button>
+                        )}
                       </div>
                     ))}
                   </div>

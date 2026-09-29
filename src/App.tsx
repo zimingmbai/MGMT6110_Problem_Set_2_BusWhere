@@ -10,6 +10,7 @@ export default function App() {
   const [destinationStopCode, setDestinationStopCode] = useState<string | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const [stopsMap, setStopsMap] = useState<Map<string, BusStop>>(new Map());
+  const [userCoordinates, setUserCoordinates] = useState<{ latitude: number; longitude: number } | null>(null);
 
   const handleStopsLoaded = useCallback((loadedStops: BusStop[]) => {
     const map = new Map<string, BusStop>();
@@ -19,11 +20,18 @@ export default function App() {
     setStopsMap(map);
   }, []);
 
-  const handleSelectService = (stopCode: string, serviceNumber: string) => {
+  const handleSelectService = (stopCode: string, serviceNumber: string, initialDestinationCode?: string | null) => {
     setBoardingStopCode(stopCode);
     setSelectedService(serviceNumber);
-    setDestinationStopCode(null);
+    setDestinationStopCode(initialDestinationCode || null);
     setPanelOpen(true);
+  };
+
+  const handleChangeBoardingStop = (stopCode: string) => {
+    setBoardingStopCode(stopCode);
+    if (destinationStopCode === stopCode) {
+      setDestinationStopCode(null);
+    }
   };
 
   const handleClosePanel = () => {
@@ -33,7 +41,7 @@ export default function App() {
     // Note: searchQuery is left untouched per spec!
   };
 
-  const handleSelectDestination = (stopCode: string) => {
+  const handleSelectDestination = (stopCode: string | null) => {
     setDestinationStopCode(stopCode);
   };
 
@@ -54,6 +62,8 @@ export default function App() {
             activeBoardingCode={panelOpen ? boardingStopCode : null}
             activeServiceNumber={panelOpen ? selectedService : null}
             onStopsLoaded={handleStopsLoaded}
+            userCoordinates={userCoordinates}
+            onCoordinatesChange={setUserCoordinates}
           />
         </div>
 
@@ -73,9 +83,11 @@ export default function App() {
             serviceNumber={selectedService}
             boardingStopCode={boardingStopCode}
             destinationStopCode={destinationStopCode}
+            onChangeBoardingStop={handleChangeBoardingStop}
             onSelectDestination={handleSelectDestination}
             onClose={handleClosePanel}
             stopsMap={stopsMap}
+            userCoordinates={userCoordinates}
           />
         )}
       </main>
