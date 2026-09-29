@@ -38,19 +38,36 @@ predictions.md committed at 25 Sep 2026, 21:51; first comment for this set on my
   - There were no findings that displayed concerns about the design being overly minimalist.
 
 ## Q1. Where was confirmation bias in my own evaluation?
-- Confirmation bias appeared in how I gave more weight to issues I had already predicted.
-- Several predicted findings were also found by others, but I often rated them more severely, while missing several other issues I had not anticipated.
-- This suggests my expectations influenced both my attention and severity judgments.
+- Finding 2, 3, 6 was what I predicted, which was confirmed from through the findings by other team members.
+- These findings surfaced because they were the more obvious ones during the user journey.
 ## Q2. Which prediction broke, and what did it teach me?
-- My prediction that Visibility of System Status would be the worst heuristic broke.
-- Instead, the strongest shared concern was Aesthetic and Minimalist Design, especially the long area list identified by my team members.
-- Hence, my assumptions did not fully reflect what others found to be disruptive and reinforced the need for independent evaluation.
+- All of my Predicted Findings held, likely because these could appear in most AI products.
+- For example, the ability to save Bus Stops and Services is an additional screen.
+- This likely won't be built in unless it was explicitly mentioned to the AI.
 ## Q3. Which groupmate finding did I nearly dismiss, and what did the evidence say?
 - I nearly dismissed the inability to search by bus service number.
 - The comparison showed that searching by service number was a meaningful use case.
 - This is a reminder to avoid undermining an issue simply because it did not strongly affect my own user flow.
 ## Q4. What did I revise, which heuristic does it serve, and how do I know it worked?
 - Initial Version: https://mgmt-6110-problem-set-2-bus-where-5qx3-picvp2bfi-zi-ming-mbai.vercel.app?_vercel_share=hTg76ViXg5ltdgq6AVDqQ4no8F26gEee
-- 
+- The Fixes are categorised into:
+  1) Data Reliability and Correctness (Heuristic 1: Visibility of System Status)
+  - It is working because now the ETA updates (i.e. if we are at the same screen, the timings will adjust when there are updates)
+  - There is also no ETA provided if the Bus Service is not available
+  2) User Search Journey (Heuristic 7: Flexibility and Efficiency of Use)
+  - There is a single entry point to search for Bus Stops and Bus Services
+  - Hence, a user does not have to be confused with the long list of areas previously
+  - It also clearly tells the user what are the data that they can input in search
 ## Q5. What did my users give me that I could not have found myself?
+- My users highlighted that asking mentioning that they can search by "code" is ambiguous, because it could mean Postal Code or Bus Stop Code
+- I did not find this, because internally I set out to create a bus arrival app, hence intuitively I would have assumed "code" means bus stop code
+- Hence, that led to me overlooking the flow of a regular user
 ## Q6. Did the AI help me confirm, or help me falsify?
+- For the refreshing of Bus Arrival Timings, I initially wanted a 20s countdown button which the user has to manually trigger.
+  - AI rejected this as additional friction, because a user has to trigger it. And if they are in a rush, this would not be helpful.
+  - Hence, we moved to a subtle refreshing automatically every 20s
+  - This removed friction for the user, and they can just glance at the page without always having to press a button
+- AI also falsify my ask to have 4 separate tabs to search (1 each for Bus Stop, Bus Service, Road Name, Postal Code)
+  - The suggestion made sense because 4 tabs meant a user who is in a rush and needs efficiency would have to actively think of what they want to search, and then tap the relevant tab
+  - Consolidating all into a search bar would make it cleaner
+  - The user does not have to think, and the search bar is intuitive enough to display relevant results
